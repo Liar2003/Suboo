@@ -924,6 +924,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
 </head>
 <body>
 <div id="app" class="app">
+  <div class="sidebar-backdrop" id="sidebar-backdrop" hidden></div>
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark">က</div>

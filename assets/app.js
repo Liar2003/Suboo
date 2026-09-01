@@ -660,7 +660,23 @@ function applyLang() {
 function setupShell() {
   applyTheme();
   applyLang();
-  $('#sidebar-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('open'));
+  // Sidebar drawer
+  const sidebar = $('#sidebar');
+  const backdrop = $('#sidebar-backdrop');
+  const isMobile = () => matchMedia('(max-width: 900px)').matches;
+  const closeDrawer = () => { sidebar.classList.remove('open'); backdrop.hidden = true; document.body.classList.remove('no-scroll'); };
+  const openDrawer = () => { sidebar.classList.add('open'); backdrop.hidden = false; document.body.classList.add('no-scroll'); };
+  $('#sidebar-toggle').addEventListener('click', () => {
+    if (sidebar.classList.contains('open')) closeDrawer(); else openDrawer();
+  });
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+  window.addEventListener('resize', () => { if (!isMobile()) closeDrawer(); });
+  // Auto-close on any nav click within the drawer
+  sidebar.querySelectorAll('a.nav-item, a.bottom-nav').forEach(a => a.addEventListener('click', () => { if (isMobile()) closeDrawer(); }));
+  // Bottom-nav: close any open modal/drawer on tap
+  $$('.bottom-nav a').forEach(a => a.addEventListener('click', () => closeDrawer()));
+
   $('#lang-toggle').addEventListener('click', () => {
     state.lang = state.lang === 'mm' ? 'en' : 'mm';
     LS.set('lang', state.lang);
@@ -734,6 +750,11 @@ async function route() {
   const { name, param } = parseRoute();
   state.route = name; state.routeParam = param;
   setActiveNav(name);
+  // Always close the mobile drawer when navigating
+  const sb = $('#sidebar'); const bd = $('#sidebar-backdrop');
+  if (sb) sb.classList.remove('open');
+  if (bd) bd.hidden = true;
+  document.body.classList.remove('no-scroll');
   const c = $('#content');
   c.classList.remove('fade-in');
   c.innerHTML = '<div class="empty">' + t('common.loading') + '</div>';
