@@ -1,19 +1,140 @@
-IMPORTANT REQUIREMENT UPDATES
+FINAL BUILD PROMPT — MONTHLY SAVINGS MANAGEMENT SYSTEM
 
-Update the previously specified Monthly Savings Management App with the following requirements.
+You are a senior PHP full-stack developer, database architect, UI/UX designer, and data visualization engineer.
 
-1. Correct Member List
+Build a complete, polished, production-ready Monthly Savings Management System.
 
-The two members below are DIFFERENT PEOPLE:
+The application is for a group of people who save money every month.
 
-min khant kyaw1
-min khant kyaw2
+---
 
-They must NEVER be merged.
+1. TECHNOLOGY REQUIREMENTS
 
-Use unique internal IDs for every member.
+The application must use:
 
-The final default member list is:
+- PHP 8.2+
+- SQLite
+- PDO
+- HTML5
+- CSS3
+- Vanilla JavaScript
+
+Do NOT use:
+
+- Laravel
+- Symfony
+- React
+- Vue
+- Angular
+- Node.js
+- npm
+- Vite
+- Composer
+- MySQL
+- PostgreSQL
+
+The application must be deployable on a normal PHP hosting/server.
+
+---
+
+2. FILE STRUCTURE
+
+Keep the application simple.
+
+Main application:
+
+index.php
+
+SQLite database:
+
+savings.sqlite
+
+The SQLite database must be automatically created if it doesn't exist.
+
+The PHP application should initialize the database and tables automatically on first run.
+
+The UI, CSS, JavaScript, and PHP backend can all remain inside:
+
+index.php
+
+No build process should be required.
+
+---
+
+3. DATABASE
+
+Use SQLite through PDO.
+
+Example:
+
+$pdo = new PDO('sqlite:' . __DIR__ . '/savings.sqlite');
+
+Enable:
+
+PRAGMA foreign_keys = ON;
+
+Use prepared statements everywhere.
+
+Do NOT concatenate user input into SQL queries.
+
+---
+
+4. DATABASE SCHEMA
+
+Create at minimum these tables.
+
+members
+
+CREATE TABLE members (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    monthly_amount INTEGER NOT NULL DEFAULT 10000,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+payments
+
+CREATE TABLE payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id INTEGER NOT NULL,
+    month TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    amount_input TEXT,
+    paid INTEGER NOT NULL DEFAULT 1,
+    paid_at TEXT,
+    note TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+
+    FOREIGN KEY (member_id)
+        REFERENCES members(id)
+        ON DELETE CASCADE,
+
+    UNIQUE(member_id, month)
+);
+
+settings
+
+CREATE TABLE settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+
+Add appropriate indexes for:
+
+payments.member_id
+payments.month
+payments.paid
+
+---
+
+5. FINAL MEMBER LIST
+
+The final group contains exactly 16 people.
+
+Use these members:
 
 1. Ko chit ko
 2. zaw Oo
@@ -26,42 +147,120 @@ The final default member list is:
 9. min khant kyaw2
 10. win Myat tun
 11. sai zaw zaw
-12. Wai Lin tun
-13. Wai Yan Phyo
-14. Wai moe
-15. Hein thiha
-16. bobo Aung
-17. chit photo Aung
+12. Wai moe
+13. Hein thiha
+14. bobo Aung
+15. win moe Aung
+16. Aung myo thant
 
-There are currently 17 members.
+IMPORTANT:
 
-Do NOT invent additional members.
+These are two different people:
 
-Each member must have a unique ID, for example:
+min khant kyaw1
+min khant kyaw2
 
-member_001
-member_002
-...
-member_017
+They must have different database IDs.
 
-The member's display name is NOT the unique identifier.
+Never use member name as the primary key.
 
-This is important because similar names may exist.
+Example:
+
+ID 8  → min khant kyaw1
+ID 9  → min khant kyaw2
+
+Their payment histories must remain completely independent.
 
 ---
 
-2. Myanmar Number / Amount Input
+6. REMOVED MEMBERS
 
-The application MUST support entering savings amounts using:
+Do NOT include these members in the new default list:
 
-Arabic numerals
+Wai Yan Phyo
+Wai Lin tun
+chit photo Aung
+
+If these members already exist in an older database, do NOT silently delete historical records.
+
+Handle migration safely.
+
+---
+
+7. DEFAULT MONTHLY AMOUNT
+
+Default monthly amount:
+
+10,000 MMK
+
+The application should display this naturally in Myanmar:
+
+၁သောင်း ကျပ်
+
+and English:
+
+10,000 MMK
+
+Make the default amount configurable.
+
+---
+
+8. CUSTOM MEMBER MONTHLY AMOUNT
+
+Every member can have an individual monthly target.
+
+Example:
+
+Ko chit ko       → ၁သောင်း
+zaw Oo           → ၂သောင်း
+Kyaw myint aye   → ၅သောင်း
+
+If no custom amount is specified, use the global default amount.
+
+The dashboard's expected amount MUST calculate the sum of each active member's expected monthly amount.
+
+Do NOT simply calculate:
+
+16 × default amount
+
+if members have different monthly amounts.
+
+---
+
+9. MONTHLY PAYMENT SYSTEM
+
+Each member normally has one payment record per month.
+
+Example:
+
+member_id = 8
+month = 2026-09
+amount = 10000
+
+The database UNIQUE constraint:
+
+UNIQUE(member_id, month)
+
+must prevent accidental duplicate monthly payments.
+
+If a payment already exists, allow the user to edit it instead of creating a duplicate.
+
+---
+
+10. AMOUNT INPUT — VERY IMPORTANT
+
+Users must be able to enter amounts in multiple formats.
+
+Support:
+
+Arabic numbers
 
 10000
 50000
 100000
 150000
 
-Comma-separated numbers
+Comma numbers
 
 10,000
 50,000
@@ -75,461 +274,1378 @@ Myanmar digits
 ၁၀၀၀၀၀
 ၁၅၀၀၀၀
 
-Myanmar text amounts
-
-The user should be able to type amounts naturally using Myanmar monetary expressions.
-
-Examples:
+Myanmar monetary text
 
 ၁သောင်း
-၁သိန်း
-၅သောင်း
 ၂သောင်း
+၅သောင်း
+၁သိန်း
 ၂သိန်း
 ၁သိန်းခွဲ
+၂သိန်းခွဲ
 ၁သိန်း ၅သောင်း
 ၁သိန်း၅သောင်း
 ၂သိန်း ၅ထောင်
 
-The application must parse these into numeric MMK values.
-
-Examples:
-
-၁သောင်း       → 10,000
-၂သောင်း       → 20,000
-၅သောင်း       → 50,000
-၁သိန်း        → 100,000
-၂သိန်း        → 200,000
-၁သိန်းခွဲ      → 150,000
-၁သိန်း ၅သောင်း → 150,000
-၂သိန်း ၅ထောင် → 205,000
-
 ---
 
-3. Amount Parser
+11. MYANMAR AMOUNT PARSER
 
-Create a robust JavaScript function such as:
+Implement a robust parser:
 
 parseMyanmarAmount(input)
 
-It should return a numeric amount.
+Examples:
 
-For example:
+၁သောင်း
+→ 10,000
 
-parseMyanmarAmount("၁သောင်း")
-// 10000
+၂သောင်း
+→ 20,000
 
-parseMyanmarAmount("၁သိန်း")
-// 100000
+၅သောင်း
+→ 50,000
 
-parseMyanmarAmount("၁သိန်းခွဲ")
-// 150000
+၁သိန်း
+→ 100,000
 
-parseMyanmarAmount("၁သိန်း ၅သောင်း")
-// 150000
+၂သိန်း
+→ 200,000
 
-parseMyanmarAmount("10,000")
-// 10000
+၁သိန်းခွဲ
+→ 150,000
 
-Also support normal English expressions where reasonably possible:
+၂သိန်းခွဲ
+→ 250,000
+
+၁သိန်း ၅သောင်း
+→ 150,000
+
+၁သိန်း၅သောင်း
+→ 150,000
+
+၂သိန်း ၅ထောင်
+→ 205,000
+
+Also support:
 
 10k
 50k
 100k
 1 lakh
 
-At minimum, fully support Myanmar monetary expressions.
+where reasonably unambiguous.
 
 ---
 
-4. Myanmar Digits Conversion
+12. MYANMAR DIGIT CONVERSION
 
-Implement conversion between Myanmar digits and Arabic digits.
-
-Myanmar:
+Support:
 
 ၀၁၂၃၄၅၆၇၈၉
 
-Arabic:
+and convert to:
 
 0123456789
 
-Example:
+For example:
 
-၁၀၀,၀၀၀ → 100000
+၁၀၀,၀၀၀
 
-The parser should normalize the input before calculating.
+must become:
+
+100000
+
+before calculation.
 
 ---
 
-5. Amount Units
+13. SUPPORTED MYANMAR UNITS
 
-Support these Myanmar units:
+Support:
 
 ရာ
 ထောင်
 သောင်း
 သိန်း
-သိန်းခွဲ
 သန်း
 ကုဋေ
 
 Examples:
 
-၅ရာ       → 500
-၁ထောင်    → 1,000
-၅ထောင်    → 5,000
-၁သောင်း    → 10,000
-၅သောင်း    → 50,000
-၁သိန်း     → 100,000
-၂သိန်း     → 200,000
-၁သန်း      → 1,000,000
+၁ထောင်
+= 1,000
 
-Support combinations:
+၅ထောင်
+= 5,000
 
-၁သိန်း ၂သောင်း ၅ထောင်
+၁သောင်း
+= 10,000
 
-Result:
+၅သောင်း
+= 50,000
 
-125,000
+၁သိန်း
+= 100,000
 
-Also support:
+၂သိန်း
+= 200,000
 
-၂သိန်း ၅သောင်း
-
-Result:
-
-250,000
+၁သန်း
+= 1,000,000
 
 ---
 
-6. "ခွဲ" Support
+14. "ခွဲ" SUPPORT
 
-Myanmar users commonly say:
+Support:
 
 ၁သိန်းခွဲ
 ၂သိန်းခွဲ
 ၅သောင်းခွဲ
 
-Interpret:
+Interpret as:
 
 ၁သိန်းခွဲ  = 150,000
 ၂သိန်းခွဲ  = 250,000
-၅သောင်းခွဲ = 55,000
+၅သောင်းခွဲ = 75,000
 
 General rule:
 
 X unit ခွဲ = X unit + half of that unit
 
-Do not confuse "ခွဲ" with a literal decimal.
+Handle this correctly.
 
 ---
 
-7. Amount Input UI
+15. LIVE AMOUNT PREVIEW
 
-The payment form should have an amount input such as:
-
-Amount
-[ ၁သောင်း                     ]
-
-Below it, show a live parsed preview:
-
-= 10,000 MMK
-
-If the user types:
+When entering:
 
 ၁သိန်းခွဲ
 
-show:
+show immediately:
 
-= 150,000 MMK
+၁၅၀,၀၀၀ ကျပ်
 
-If the input is invalid:
+and in English:
+
+150,000 MMK
+
+Invalid input:
 
 ⚠ Amount could not be understood
 
-Do not save invalid amounts.
+Never save an invalid amount.
 
 ---
 
-8. Amount Display
+16. STORE NUMERIC VALUES
 
-Internally store payment amounts as numeric values.
+Always store the parsed amount as an INTEGER.
 
 Example:
 
 {
-  "amount": 10000
+    "amount": 150000,
+    "amount_input": "၁သိန်းခွဲ"
 }
 
-Do NOT store the raw text as the primary amount.
+The numeric value is authoritative.
 
-Optionally preserve the original input:
+The original input is optional and only for display/history.
 
-{
-  "amount": 10000,
-  "amountInput": "၁သောင်း"
-}
-
-This allows the UI to remember what the user originally typed.
-
-Calculations must always use:
+All calculations must use:
 
 amount
 
-not the text.
+not the original text.
 
 ---
 
-9. Total Amount Display
+17. AMOUNT FORMATTERS
 
-All dashboard totals, reports, member totals, and monthly totals must support Myanmar-friendly formatting.
+Implement:
 
-Example:
+formatMoney(amount)
 
-၁၀,၀၀၀ ကျပ်
-၁ သိန်း
-၁ သိန်းခွဲ
-၂ သိန်း
-
-Provide a setting:
-
-Amount Display
-
-with options:
-
-Numeric
-
-100,000 MMK
-
-Myanmar Digits
-
-၁၀၀,၀၀၀ ကျပ်
-
-Myanmar Unit
-
-၁ သိန်း
-
-Auto
-
-Automatically choose a readable representation.
-
-Default should be:
-
-၁၀,၀၀၀ ကျပ်
-
-when Myanmar language is selected.
-
-For English:
-
-100,000 MMK
-
----
-
-10. Smart Myanmar Amount Formatter
-
-Create:
+and:
 
 formatMyanmarAmount(amount)
 
 Examples:
 
-1000       → ၁,၀၀၀ ကျပ်
-10000      → ၁၀,၀၀၀ ကျပ်
-50000      → ၅၀,၀၀၀ ကျပ်
-100000     → ၁ သိန်း
-150000     → ၁ သိန်းခွဲ
-200000     → ၂ သိန်း
-250000     → ၂ သိန်းခွဲ
-1000000    → ၁ သန်း
+10,000
+→ ၁၀,၀၀၀ ကျပ်
 
-Also provide a simpler numeric formatter:
+100,000
+→ ၁ သိန်း ကျပ်
 
-formatMoney(amount)
+150,000
+→ ၁ သိန်းခွဲ ကျပ်
 
-which can return:
+200,000
+→ ၂ သိန်း ကျပ်
 
-၁၀၀,၀၀၀ ကျပ်
+250,000
+→ ၂ သိန်းခွဲ ကျပ်
 
-depending on the selected language/settings.
+1,000,000
+→ ၁ သန်း ကျပ်
+
+Also provide exact numeric display:
+
+၁၅၀,၀၀၀ ကျပ်
+
+The user should be able to switch between:
+
+Exact Number
+Myanmar Unit
+Auto
 
 ---
 
-11. Dashboard Total Amount
+18. ADVANCED DASHBOARD
 
-Dashboard must show real numeric totals.
+The dashboard is the most important part of the application.
+
+Create a premium financial dashboard.
+
+Show:
+
+Total Members
+
+16
+
+Active Members
+
+16
+
+Total Saved — All Time
+
+Calculate the sum of ALL paid payments.
+
+Display BOTH:
+
+၁၂၅၀၀၀၀ ကျပ်
+
+and:
+
+၁၂ သိန်း ၅ သောင်း ကျပ်
+
+or the most natural equivalent.
+
+English:
+
+1,250,000 MMK
+
+---
+
+19. CURRENT MONTH DASHBOARD
+
+For selected month, show:
+
+Expected
+Collected
+Remaining
+Paid Members
+Unpaid Members
+Collection Rate
 
 Example:
 
-Total Saved
+Expected
+၁၆၀,၀၀၀ ကျပ်
 
-၁၂ သိန်း ၅ သောင်း
+Collected
+၁၂၀,၀၀၀ ကျပ်
 
-or, if exact numeric mode is selected:
+Remaining
+၄၀,၀၀၀ ကျပ်
 
-၁,၂၅၀,၀၀၀ ကျပ်
+Paid
+12 / 16
 
-Do not simply concatenate payment input strings.
+Unpaid
+4
 
-For example, if payments are:
+Collection Rate
+75%
 
-၁သောင်း
-၅သောင်း
-၁သိန်း
-
-the total must calculate:
-
-10,000
-+50,000
-+100,000
------------
-160,000
-
-and display:
-
-၁ သိန်း ၆ သောင်း
-
-when Myanmar unit formatting is enabled.
+All values must update dynamically.
 
 ---
 
-12. Expected Amount
+20. MONTHLY TOTALS — VERY IMPORTANT
 
-If monthly default amount is:
+Create a dashboard section:
 
-၁သောင်း
+Monthly Savings Overview
 
-and there are 17 active members:
+Display EVERY month that has payment data.
 
-17 × 10,000
-= 170,000 MMK
+Example:
+
+January 2026
+Collected: ၁ သိန်း ၅ သောင်း
+Exact: ၁၅၀,၀၀၀ ကျပ်
+
+February 2026
+Collected: ၂ သိန်း
+Exact: ၂၀၀,၀၀၀ ကျပ်
+
+March 2026
+Collected: ၂ သိန်း ၅ သောင်း
+Exact: ၂၅၀,၀၀၀ ကျပ်
+
+Each month must show BOTH:
+
+Text/unit representation
+
+၂ သိန်း ၅ သောင်း ကျပ်
+
+Exact number
+
+၂၅၀,၀၀၀ ကျပ်
+
+---
+
+21. MONTHLY CHART
+
+Create an advanced interactive chart.
+
+X-axis:
+
+Months
+
+Y-axis:
+
+Amount
+
+Show collected amount for every month.
+
+Example:
+
+Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep
+
+Hover/tap a month should show:
+
+September 2026
+
+Collected:
+၁ သိန်း ၅ သောင်း ကျပ်
+
+Exact:
+150,000 MMK
+
+Paid:
+15 / 16
+
+Collection:
+93.75%
+
+---
+
+22. YEARLY TOTAL
+
+Add:
+
+This Year
+
+Calculate total savings for the selected year.
 
 Display:
 
-၁ သိန်း ၇ သောင်း
+၁၅ သိန်း ၅ သောင်း ကျပ်
 
-or:
+and:
 
-၁၇၀,၀၀၀ ကျပ်
+1,550,000 MMK
 
-depending on the selected display mode.
+Allow year selection:
+
+2024
+2025
+2026
+2027
 
 ---
 
-13. Per-Member Custom Amount
+23. ALL-TIME TOTAL
 
-The default monthly amount may be:
+Add a prominent card:
 
-၁သောင်း
+All-Time Savings
 
-but allow an individual member to have a custom amount.
+This must include all paid payments across all years.
+
+Show:
+
+Exact:
+၁,၅၅၀,০০০ ကျပ်
+
+Text:
+၁၅ သိန်း ၅ သောင်း ကျပ်
+
+The exact numeric amount and human-readable amount must always match.
+
+---
+
+24. MEMBER CONTRIBUTION DASHBOARD
+
+Show ranking:
+
+Top Contributors
 
 Example:
 
-Ko chit ko → ၁သောင်း
-zaw Oo → ၂သောင်း
-Kyaw myint aye → ၅သောင်း
+1. Ko chit ko
+   ၅ သိန်း
 
-The payment form should support this.
+2. zaw Oo
+   ၄ သိန်း
 
-Expected amount should be calculated using each member's configured monthly amount rather than blindly multiplying every member by one global amount when custom amounts exist.
+3. Kyaw myint aye
+   ၃ သိန်း ၅ သောင်း
+
+Show:
+
+- Total saved
+- Number of paid months
+- Average monthly contribution
+- Payment rate
 
 ---
 
-14. Input Examples / Quick Amount Buttons
+25. PAYMENT STATUS CHART
 
-Add quick amount buttons:
+Create:
 
-၁ထောင်
-၅ထောင်
+Paid
+Unpaid
+
+donut/pie visualization.
+
+Example:
+
+Paid     12
+Unpaid    4
+
+Also show percentage.
+
+---
+
+26. EXPECTED VS COLLECTED
+
+Create a comparison chart:
+
+Expected
+Collected
+Remaining
+
+for the selected month.
+
+---
+
+27. SAVINGS TREND
+
+Create a trend chart for:
+
+Monthly collected amount
+
+Allow:
+
+3 months
+6 months
+12 months
+All time
+
+---
+
+28. MONTHLY SAVINGS PAGE
+
+Create a dedicated page for monthly payments.
+
+Top controls:
+
+← Previous
+September 2026
+Next →
+
+and a month picker.
+
+Show all active members.
+
+Example:
+
+Member
+Monthly Target
+Paid Amount
+Status
+Paid Date
+Action
+
+---
+
+29. QUICK PAYMENT
+
+Each unpaid member should have:
+
+[ Pay Now ]
+
+Clicking opens a modal.
+
+Fields:
+
+Member
+Month
+Amount
+Payment Date
+Note
+
+Amount input supports:
+
+၁သောင်း
+10000
+၁၀,၀၀၀
+
+Show live parsed amount.
+
+---
+
+30. BULK PAYMENT
+
+Allow selecting multiple members.
+
+Example:
+
+☑ Ko chit ko
+☑ zaw Oo
+☑ Kyaw myint aye
+☐ toewaoo
+
+Then:
+
+[ Mark Selected as Paid ]
+
+Use each member's configured monthly amount by default.
+
+Allow the user to review before saving.
+
+---
+
+31. MEMBER MANAGEMENT
+
+Members page must support:
+
+- Add member
+- Edit member
+- Deactivate
+- Reactivate
+- Search
+- Sort
+- Filter
+- View profile
+- Set monthly amount
+
+Member card:
+
+Avatar
+Name
+Monthly Target
+Total Saved
+Paid Months
+Payment Rate
+Current Month Status
+
+---
+
+32. MEMBER PROFILE
+
+Show:
+
+Member Name
+
+Monthly Target
+Total Saved
+Paid Months
+Unpaid Months
+Payment Rate
+Average Monthly Saving
+
+Then show complete history.
+
+Example:
+
+September 2026
+၁သောင်း
+10,000 MMK
+Paid
+
+August 2026
+၁သောင်း
+10,000 MMK
+Paid
+
+July 2026
+Unpaid
+
+Include contribution chart.
+
+---
+
+33. REPORTS
+
+Create advanced Reports.
+
+Filters:
+
+Year
+Month
+Member
+Status
+
+Reports:
+
+Monthly Report
+
+Expected
+Collected
+Remaining
+Paid Members
+Unpaid Members
+Collection Rate
+
+Yearly Report
+
+Show all 12 months.
+
+Member Report
+
+Show:
+
+Member
+Total Saved
+Paid Months
+Unpaid Months
+Average
+Payment Rate
+
+---
+
+34. ALL-MONTH TABLE
+
+Create a table:
+
+Month | Expected | Collected | Remaining | Paid | Unpaid | Rate
+
+Example:
+
+Jan 2026 | 160,000 | 150,000 | 10,000 | 15 | 1 | 93.75%
+Feb 2026 | 160,000 | 160,000 | 0 | 16 | 0 | 100%
+Mar 2026 | 160,000 | 130,000 | 30,000 | 13 | 3 | 81.25%
+
+Each amount should have a human-readable Myanmar representation available.
+
+---
+
+35. SEARCH
+
+Global search:
+
+- Member names
+- Notes
+- Payment records
+
+Case-insensitive.
+
+Fast enough for thousands of records.
+
+---
+
+36. CALENDAR
+
+Create monthly calendar view.
+
+Show payment activity.
+
+Clicking a month/day should allow viewing related records.
+
+---
+
+37. EXPORT
+
+Implement:
+
+CSV
+
+Export:
+
+- All payments
+- Monthly report
+- Member report
+
+JSON
+
+Export all database data into a backup file.
+
+---
+
+38. IMPORT / RESTORE
+
+Allow JSON backup import.
+
+Workflow:
+
+Select file
+↓
+Validate
+↓
+Preview
+↓
+Confirm
+↓
+Restore
+
+Support:
+
+Replace
+
+and:
+
+Merge
+
+where practical.
+
+Never silently destroy current data.
+
+---
+
+39. SQLITE BACKUP
+
+Add a button:
+
+Download SQLite Backup
+
+Create a safe database backup.
+
+If PHP hosting permits file download, allow downloading:
+
+savings-backup-YYYY-MM-DD.sqlite
+
+Also provide JSON backup because it is more portable.
+
+---
+
+40. LANGUAGE
+
+Support:
+
+🇲🇲 Myanmar
+🇬🇧 English
+
+All UI strings must be translated.
+
+Use:
+
+translations = {
+    mm: {},
+    en: {}
+};
+
+Do not hardcode UI strings throughout JavaScript.
+
+Translate:
+
+- Navigation
+- Dashboard
+- Buttons
+- Forms
+- Errors
+- Toasts
+- Reports
+- Settings
+- Dialogs
+- Empty states
+
+Member names must remain unchanged.
+
+---
+
+41. THEME
+
+Support:
+
+Light
+Dark
+System
+
+Persist preference.
+
+Use a modern premium financial dashboard aesthetic.
+
+---
+
+42. RESPONSIVE DESIGN
+
+Must work on:
+
+360px
+390px
+768px
+1024px
+1440px+
+
+Mobile UI must be excellent.
+
+Use:
+
+- responsive cards
+- mobile navigation
+- bottom navigation or hamburger
+- touch-friendly controls
+- responsive charts
+- mobile-friendly modals
+
+---
+
+43. UI STYLE
+
+Design should feel like a modern fintech application.
+
+Use:
+
+- clean cards
+- modern typography
+- subtle gradients
+- smooth shadows
+- rounded corners
+- professional spacing
+- good contrast
+- tasteful animations
+
+Do NOT make it look like an old PHP admin dashboard.
+
+---
+
+44. ANIMATIONS
+
+Use subtle animations:
+
+- KPI number count-up
+- card entrance
+- modal transitions
+- toast notifications
+- progress bars
+- chart animation
+- page transitions
+
+Keep performance high.
+
+---
+
+45. TOAST NOTIFICATIONS
+
+Implement:
+
+✓ Payment saved
+✓ Member added
+✓ Member updated
+✓ Data saved
+✓ Backup created
+✓ Restore completed
+⚠ Invalid amount
+✕ Failed to save
+
+Translate them.
+
+---
+
+46. API ARCHITECTURE
+
+Because the application is one PHP file, implement lightweight AJAX endpoints.
+
+For example:
+
+?api=dashboard
+?api=members
+?api=payments
+?api=save_payment
+?api=delete_payment
+?api=save_member
+?api=delete_member
+?api=settings
+?api=export
+
+You may choose a cleaner API structure.
+
+Use JSON responses.
+
+Example:
+
+{
+    "success": true,
+    "data": {}
+}
+
+Use POST for mutations.
+
+Use prepared SQL statements.
+
+---
+
+47. SECURITY
+
+Implement:
+
+- PDO prepared statements
+- SQLite foreign keys
+- Input validation
+- Output escaping
+- JSON validation
+- Request method validation
+- Safe file handling
+- CSRF protection if practical
+- No arbitrary filesystem paths
+- No SQL injection
+- No unsafe HTML injection
+
+Do not expose PHP errors to users in production.
+
+---
+
+48. DATABASE INITIALIZATION
+
+On first request:
+
+1. Create SQLite file if missing.
+2. Create tables.
+3. Create indexes.
+4. Insert default settings.
+5. Insert the 16 default members.
+
+Do not duplicate members on every request.
+
+Use a reliable initialization/migration mechanism.
+
+---
+
+49. DATABASE MIGRATIONS
+
+Include a simple schema version mechanism.
+
+For example:
+
+schema_version = 1
+
+If the database schema changes in future versions, migrations can be applied safely.
+
+Do not destroy existing data during migrations.
+
+---
+
+50. NO LOCALSTORAGE AS DATABASE
+
+IMPORTANT:
+
+The previous version used LocalStorage.
+
+For this final version:
+
+SQLite is the authoritative database.
+
+LocalStorage may ONLY be used for UI preferences such as:
+
+language
+theme
+sidebar state
+selected month
+display mode
+
+Do NOT store the authoritative payment/member database only in LocalStorage.
+
+All important data must be stored in:
+
+savings.sqlite
+
+---
+
+51. DASHBOARD DATA MUST COME FROM SQLITE
+
+When loading the dashboard, PHP should calculate data from SQLite or provide the required API data.
+
+Do not rely only on stale browser data.
+
+The dashboard must accurately reflect the actual database.
+
+---
+
+52. SMART AMOUNT DISPLAY
+
+Every important amount should be capable of displaying BOTH:
+
+Exact
+
+၁၅၀,၀၀၀ ကျပ်
+
+Human-readable
+
+၁ သိန်းခွဲ ကျပ်
+
+For English:
+
+150,000 MMK
+
+Provide a global setting:
+
+Amount Display:
+• Exact
+• Myanmar Units
+• Both
+• Auto
+
+Recommended default:
+
+Both
+
+for dashboard/report screens.
+
+---
+
+53. DASHBOARD EXAMPLE
+
+The dashboard should visually contain approximately:
+
+┌─────────────────────────────────────────────┐
+│ Monthly Savings Manager                     │
+│ September 2026                              │
+├──────────────┬──────────────┬───────────────┤
+│ Members      │ This Month   │ All Time      │
+│ 16           │ 150,000 MMK  │ 1,550,000 MMK│
+│              │ ၁၅ သိန်း?    │ ၁၅ သိန်း၅သောင်း │
+├──────────────┴──────────────┴───────────────┤
+│ Collection Progress                          │
+│ ███████████████████░░ 93.75%                │
+├─────────────────────────────────────────────┤
+│ Monthly Savings Trend                        │
+│                 📈                           │
+├─────────────────────────────────────────────┤
+│ Monthly Totals                               │
+│ Jan    ၁ သိန်း ၅ သောင်း    150,000 MMK     │
+│ Feb    ၂ သိန်း              200,000 MMK     │
+│ Mar    ၂ သိန်း ၅ သောင်း    250,000 MMK     │
+├─────────────────────────────────────────────┤
+│ Paid vs Unpaid                               │
+│       ◯ Chart                                │
+├─────────────────────────────────────────────┤
+│ Top Contributors                             │
+│ 1. Ko chit ko              500,000 MMK      │
+│ 2. zaw Oo                  400,000 MMK      │
+└─────────────────────────────────────────────┘
+
+Make the actual UI significantly more polished than this ASCII example.
+
+---
+
+54. PERFORMANCE
+
+The app should handle at least:
+
+16+ members
+10,000+ payments
+multiple years
+
+without noticeable slowdown.
+
+Use SQL aggregation for dashboard totals where appropriate.
+
+For example:
+
+SUM(amount)
+COUNT(*)
+GROUP BY month
+
+Do not load unnecessary historical data into the browser just to calculate simple totals.
+
+---
+
+55. IMPORTANT CALCULATION RULES
+
+All-time total
+
+SUM(paid payments.amount)
+
+Monthly collected
+
+SUM(amount)
+WHERE month = selectedMonth
+AND paid = 1
+
+Monthly expected
+
+Sum each active member's monthly target.
+
+Remaining
+
+expected - collected
+
+Never return negative remaining values; if overpayment occurs, show the surplus separately.
+
+Collection rate
+
+collected / expected × 100
+
+Handle zero expected amount safely.
+
+Member total
+
+SUM(all paid payments for member)
+
+---
+
+56. OVERPAYMENT SUPPORT
+
+If:
+
+Expected = 160,000
+Collected = 170,000
+
+do not display:
+
+Remaining = -10,000
+
+Instead:
+
+Remaining = 0
+Surplus = 10,000
+
+Show the surplus clearly.
+
+---
+
+57. AUDIT-FRIENDLY DATA
+
+When payments are edited, preserve:
+
+created_at
+updated_at
+
+Show payment date.
+
+If practical, record an edit history table:
+
+payment_history
+
+with:
+
+payment_id
+old_amount
+new_amount
+changed_at
+
+This is preferred for a financial record application.
+
+---
+
+58. DEFAULT CURRENCY
+
+Default:
+
+MMK
+
+Myanmar UI:
+
+ကျပ်
+
+English:
+
+MMK
+
+---
+
+59. DEFAULT LANGUAGE
+
+Default language:
+
+Myanmar
+
+Allow switching instantly without reloading where practical.
+
+---
+
+60. FINAL TEST DATA
+
+Test the parser with all of these:
+
 ၁သောင်း
 ၂သောင်း
 ၅သောင်း
 ၁သိန်း
 ၂သိန်း
-
-Clicking a button should populate the amount input.
-
-Also allow free-form typing.
-
----
-
-15. Validation
-
-Test all of these:
-
-၁သောင်း
-၁သိန်း
-၂သိန်း
 ၁သိန်းခွဲ
 ၂သိန်းခွဲ
-၅သောင်း
 ၁သိန်း ၅သောင်း
-၁သိန်း၅သောင်း
-၂သိန်း ၅သောင်း ၅ထောင်
-10,000
-100000
+၂သိန်း ၅သောင်း
+၂သိန်း ၅ထောင်
 ၁၀,၀၀၀
 ၁၀၀,၀၀၀
-
-Expected numeric values must be correct.
-
-Do not accept ambiguous or unsupported text silently.
-
-If an expression cannot be parsed reliably, show an error and ask the user to enter a valid amount.
-
----
-
-16. Important Data Integrity Rule
-
-The member name is NEVER the primary key.
-
-For example:
-
-min khant kyaw1
-min khant kyaw2
-
-must have different IDs and independent payment histories.
-
-Even if two members have exactly the same display name in the future, they must still be allowed to exist as separate people.
-
-All payment relationships must use:
-
-memberId
-
-not:
-
-memberName
-
----
-
-17. Final Quality Requirement
-
-Do not implement this as a simple string replacement system.
-
-Build a proper amount parser with:
-
-1. Myanmar digit normalization
-2. Arabic number normalization
-3. Comma removal
-4. Unit parsing
-5. Compound amount parsing
-6. "ခွဲ" handling
-7. Validation
-8. Numeric internal storage
-9. Myanmar amount formatting
-10. English amount formatting
-
-The final application must correctly calculate all totals regardless of whether the user entered:
-
+၁၅၀,၀၀၀
 10000
-10,000
-၁၀၀၀၀
-၁၀,၀၀၀
-၁သောင်း
+100000
+150000
+10k
+50k
+100k
 
-All of these should represent:
+Verify exact numeric calculations.
 
-10,000 MMK
+---
 
-and therefore produce exactly the same dashboard/report calculations.
+61. FINAL TESTING CHECKLIST
+
+Before finishing, test:
+
+Members
+
+- [ ] Exactly 16 default members
+- [ ] min khant kyaw1 and min khant kyaw2 are separate
+- [ ] Add member
+- [ ] Edit member
+- [ ] Deactivate
+- [ ] Reactivate
+- [ ] Search
+- [ ] Duplicate names
+
+Payments
+
+- [ ] Add payment
+- [ ] Edit payment
+- [ ] Delete payment
+- [ ] Mark paid
+- [ ] Mark unpaid
+- [ ] Duplicate prevention
+- [ ] Different months
+- [ ] Different amounts
+
+Amount parser
+
+- [ ] Arabic digits
+- [ ] Myanmar digits
+- [ ] Commas
+- [ ] သောင်း
+- [ ] သိန်း
+- [ ] သန်း
+- [ ] ခွဲ
+- [ ] Compound expressions
+
+Dashboard
+
+- [ ] Current month
+- [ ] All-time
+- [ ] Yearly total
+- [ ] Monthly totals
+- [ ] Expected
+- [ ] Collected
+- [ ] Remaining
+- [ ] Surplus
+- [ ] Paid
+- [ ] Unpaid
+- [ ] Collection rate
+- [ ] Charts
+- [ ] Member ranking
+
+Database
+
+- [ ] SQLite creation
+- [ ] Tables
+- [ ] Foreign keys
+- [ ] Unique payment constraint
+- [ ] Indexes
+- [ ] Prepared statements
+- [ ] Migration/versioning
+
+Reports
+
+- [ ] Monthly
+- [ ] Yearly
+- [ ] Member
+- [ ] All-time
+
+Backup
+
+- [ ] JSON export
+- [ ] JSON import
+- [ ] SQLite backup
+- [ ] Restore confirmation
+
+UI
+
+- [ ] Myanmar
+- [ ] English
+- [ ] Dark
+- [ ] Light
+- [ ] Mobile
+- [ ] Tablet
+- [ ] Desktop
+
+---
+
+62. DO NOT BUILD A PROTOTYPE
+
+This is NOT a mockup.
+
+Do NOT provide:
+
+TODO
+coming soon
+implement later
+placeholder
+fake chart data
+fake dashboard numbers
+
+All dashboard values must come from the SQLite database.
+
+All buttons must actually work.
+
+All forms must actually save.
+
+All reports must actually calculate.
+
+All charts must use real database data.
+
+---
+
+63. FINAL DELIVERABLE
+
+Build the complete application.
+
+Final deployment should be as simple as:
+
+/index.php
+/savings.sqlite
+
+If "savings.sqlite" doesn't exist, "index.php" creates it automatically.
+
+Provide:
+
+1. Complete working "index.php"
+2. SQLite database initialization
+3. Database schema
+4. All PHP API endpoints
+5. Complete HTML
+6. Complete CSS
+7. Complete JavaScript
+8. Myanmar/English translations
+9. Myanmar amount parser
+10. Myanmar amount formatter
+11. Advanced dashboard
+12. Monthly/yearly/all-time analytics
+13. Charts
+14. Reports
+15. Backup/restore
+16. Responsive UI
+17. Installation instructions
+
+The final result must be a real, usable Monthly Savings Management System, not a simplified example.
+
+Build it now.
