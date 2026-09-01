@@ -337,6 +337,15 @@
   @media (max-width: 640px) {
     form .row { grid-template-columns: 1fr; }
     main { padding: 12px; }
+    header { padding: 14px 14px; }
+    header h1 { font-size: 18px; }
+    header .admin-bar { gap: 6px; }
+    header .admin-bar input.pin { width: 100px; }
+    .stat .value { font-size: 18px; }
+    .grid { grid-template-columns: 1fr 1fr !important; }
+    .chart-card { padding: 14px; }
+    .chart-svg-wrap { overflow-x: auto; }
+    .legend { font-size: 12px; }
   }
   .locked {
     opacity: 0.55;
@@ -353,6 +362,123 @@
     font-size: 14px;
   }
   .lock-banner strong { color: #78350f; }
+
+  /* ----- Dashboard analytics ----- */
+  .stat .sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 4px;
+    word-break: break-word;
+  }
+  .stat .num {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .dashboard-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .col-3  { grid-column: span 3; }
+  .col-4  { grid-column: span 4; }
+  .col-5  { grid-column: span 5; }
+  .col-6  { grid-column: span 6; }
+  .col-7  { grid-column: span 7; }
+  .col-8  { grid-column: span 8; }
+  .col-12 { grid-column: span 12; }
+  @media (max-width: 900px) {
+    .col-3, .col-4, .col-5, .col-6, .col-7, .col-8 { grid-column: span 12; }
+  }
+
+  .chart-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  .chart-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .chart-svg-wrap {
+    width: 100%;
+    overflow: hidden;
+  }
+  .chart-svg-wrap svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .legend {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .kpi-pair {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .kpi-pair .primary-val {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .kpi-pair .secondary-val {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .top-list { list-style: none; padding: 0; margin: 0; }
+  .top-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+    font-size: 14px;
+  }
+  .top-list li:last-child { border-bottom: none; }
+  .top-list .rank {
+    color: var(--muted);
+    margin-right: 6px;
+    min-width: 24px;
+    display: inline-block;
+  }
+  .top-list .bar-track {
+    background: #e2e8f0;
+    height: 6px;
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .top-list .bar-fill {
+    background: var(--primary);
+    height: 100%;
+  }
+  .empty-chart {
+    padding: 40px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
 </style>
 </head>
 <body>
@@ -379,25 +505,89 @@
 <main>
   <!-- DASHBOARD -->
   <section class="view active" id="view-dashboard">
-    <div class="grid" style="margin-bottom:16px;">
-      <div class="card stat primary">
-        <div class="label">Total Saved</div>
-        <div class="value" id="stat-total">—</div>
+    <div class="dashboard-grid" style="margin-bottom:16px;">
+      <!-- All-time total -->
+      <div class="card stat primary col-3">
+        <div class="label">All-time Total</div>
+        <div class="kpi-pair">
+          <div class="primary-val" id="stat-all-text">—</div>
+          <div class="secondary-val" id="stat-all-num">—</div>
+        </div>
       </div>
-      <div class="card stat success">
+      <!-- Current month -->
+      <div class="card stat success col-3">
+        <div class="label">Current Month (<span id="stat-month-label">—</span>)</div>
+        <div class="kpi-pair">
+          <div class="primary-val" id="stat-month-text">—</div>
+          <div class="secondary-val" id="stat-month-num">—</div>
+        </div>
+      </div>
+      <!-- Expected this month -->
+      <div class="card stat warning col-3">
         <div class="label">Expected This Month</div>
-        <div class="value" id="stat-expected">—</div>
+        <div class="kpi-pair">
+          <div class="primary-val" id="stat-expected-text">—</div>
+          <div class="secondary-val" id="stat-expected-num">—</div>
+        </div>
       </div>
-      <div class="card stat warning">
+      <!-- Outstanding -->
+      <div class="card stat col-3">
         <div class="label">Outstanding</div>
-        <div class="value" id="stat-outstanding">—</div>
-      </div>
-      <div class="card stat">
-        <div class="label">Active Members</div>
-        <div class="value" id="stat-members">—</div>
+        <div class="kpi-pair">
+          <div class="primary-val" id="stat-out-text">—</div>
+          <div class="secondary-val" id="stat-out-num">—</div>
+        </div>
       </div>
     </div>
 
+    <!-- Charts row -->
+    <div class="dashboard-grid" style="margin-bottom:16px;">
+      <div class="chart-card col-7">
+        <h3>Monthly Trend (Bar)</h3>
+        <div class="chart-svg-wrap" id="chart-bar-wrap"></div>
+      </div>
+      <div class="chart-card col-5">
+        <h3>Contribution Share (Pie)</h3>
+        <div class="chart-svg-wrap" id="chart-pie-wrap"></div>
+      </div>
+    </div>
+
+    <div class="dashboard-grid" style="margin-bottom:16px;">
+      <div class="chart-card col-6">
+        <h3>Monthly Trend (Line)</h3>
+        <div class="chart-svg-wrap" id="chart-line-wrap"></div>
+      </div>
+      <div class="chart-card col-6">
+        <h3>Expected vs Paid (Donut)</h3>
+        <div class="chart-svg-wrap" id="chart-donut-wrap"></div>
+      </div>
+    </div>
+
+    <!-- By-month and top members -->
+    <div class="dashboard-grid" style="margin-bottom:16px;">
+      <div class="card col-7">
+        <h2 class="section-title">By Month</h2>
+        <div class="table-wrap">
+          <table id="month-summary">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Total (Text)</th>
+                <th>Total (Number)</th>
+                <th>Payments</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card col-5">
+        <h2 class="section-title">Top Contributors</h2>
+        <ul class="top-list" id="top-members"></ul>
+      </div>
+    </div>
+
+    <!-- Current month member status -->
     <div class="card">
       <h2 class="section-title">By Member (Current Month)</h2>
       <div class="table-wrap">
@@ -842,8 +1032,9 @@ function formatMoney(amount, settings) {
    STATE & STORAGE
    ============================================================ */
 
-const STORAGE_KEY = 'suboo.app.v1';
-const ADMIN_KEY = 'suboo.admin.v1';
+const STORAGE_KEY = 'suboo.app.v1'; // cache key for last server snapshot
+const ADMIN_KEY = 'suboo.app.admin.v1';
+const API_BASE = (window.SUBOO_API_BASE || ''); // empty = same origin
 
 // Default admin PIN. Hash here is for "9876". Admin can change it from Settings once signed in.
 const DEFAULT_ADMIN_PIN_HASH = '0001a9ffb1a2faab';
@@ -892,16 +1083,12 @@ const DEFAULT_SETTINGS = {
   memberAmounts: {}, // memberId -> numeric amount
 };
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return freshState();
-    const parsed = JSON.parse(raw);
-    return Object.assign(freshState(), parsed);
-  } catch (e) {
-    return freshState();
-  }
-}
+/* ============================================================
+   STATE (server-backed)
+   ============================================================
+   All state lives on the server (data.json). The browser fetches
+   the full snapshot via /api/state on load and after each write.
+*/
 
 function freshState() {
   return {
@@ -911,25 +1098,66 @@ function freshState() {
   };
 }
 
-function saveState() {
+let state = freshState();
+let apiOnline = false;
+
+function api(path, opts) {
+  opts = opts || {};
+  const headers = Object.assign({}, opts.headers || {});
+  if (!headers['Content-Type'] && opts.body && typeof opts.body === 'object') {
+    headers['Content-Type'] = 'application/json';
+  }
+  if (adminSession && !headers['x-admin-pin']) {
+    headers['x-admin-pin'] = currentPin || '';
+  }
+  const url = API_BASE + path;
+  return fetch(url, Object.assign({}, opts, { headers }))
+    .then(r => {
+      if (!r.ok) {
+        return r.text().then(t => { throw new Error('HTTP ' + r.status + ': ' + t); });
+      }
+      return r.json();
+    });
+}
+
+async function loadStateFromServer() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      members: state.members,
-      payments: state.payments,
-      settings: state.settings,
-    }));
+    const data = await api('/api/state');
+    state = Object.assign(freshState(), data);
+    if (!state.settings.memberAmounts) state.settings.memberAmounts = {};
+    apiOnline = true;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+    return state;
   } catch (e) {
-    console.warn('Storage error', e);
+    apiOnline = false;
+    console.warn('Could not reach server, falling back to local cache:', e.message);
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) state = Object.assign(freshState(), JSON.parse(raw));
+    } catch (e2) {}
+    throw e;
   }
 }
 
-let state = loadState();
+async function refreshState() {
+  try {
+    const data = await api('/api/state');
+    state = Object.assign(freshState(), data);
+    if (!state.settings.memberAmounts) state.settings.memberAmounts = {};
+    apiOnline = true;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  } catch (e) {
+    apiOnline = false;
+    console.warn('Refresh failed:', e.message);
+  }
+}
 
 /* ============================================================
    ADMIN AUTH
    ============================================================ */
 
 let adminSession = false;
+let currentPin = null;
 
 function getAdminPinHash() {
   try {
@@ -951,8 +1179,23 @@ function tryAdminSignIn(pin) {
   return expected === got;
 }
 
+async function signInAdmin(pin) {
+  // First check client-side hash (fast)
+  if (!tryAdminSignIn(pin)) return false;
+  // Then verify against the server's PIN (authoritative)
+  try {
+    await api('/api/auth/check', { method: 'POST', headers: { 'x-admin-pin': pin } });
+    adminSession = true;
+    currentPin = pin;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 function signOutAdmin() {
   adminSession = false;
+  currentPin = null;
   renderAdminBar();
   applyAdminLocks();
 }
@@ -1005,7 +1248,7 @@ function applyAdminLocks() {
   // Hide nav buttons that are admin-only? We keep them visible but show banner.
 }
 
-document.getElementById('btn-pin-signin').addEventListener('click', () => {
+document.getElementById('btn-pin-signin').addEventListener('click', async () => {
   if (adminSession) {
     signOutAdmin();
     return;
@@ -1017,8 +1260,10 @@ document.getElementById('btn-pin-signin').addEventListener('click', () => {
     msg.className = 'pin-msg err';
     return;
   }
-  if (tryAdminSignIn(pin)) {
-    adminSession = true;
+  msg.textContent = 'Checking...';
+  msg.className = 'pin-msg';
+  const ok = await signInAdmin(pin);
+  if (ok) {
     msg.textContent = '';
     msg.className = 'pin-msg';
     renderAdminBar();
@@ -1104,19 +1349,391 @@ function switchView(name) {
    DASHBOARD
    ============================================================ */
 
+// Color palette for charts
+const CHART_COLORS = [
+  '#2563eb', '#16a34a', '#d97706', '#dc2626', '#7c3aed',
+  '#0891b2', '#db2777', '#65a30d', '#ca8a04', '#9333ea',
+  '#0d9488', '#e11d48', '#1d4ed8', '#15803d', '#b45309',
+  '#475569',
+];
+
+function svgEl(tag, attrs, text) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  if (attrs) for (const k in attrs) el.setAttribute(k, attrs[k]);
+  if (text != null) el.textContent = text;
+  return el;
+}
+
+function renderEmptyChart(host, msg) {
+  host.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'empty-chart';
+  div.textContent = msg || 'No data yet';
+  host.appendChild(div);
+}
+
+function renderBarChart(host, data) {
+  // data: [{label, value, color}]
+  host.innerHTML = '';
+  if (!data.length || data.every(d => !d.value)) {
+    renderEmptyChart(host);
+    return;
+  }
+  const W = 520, H = 240;
+  const padL = 50, padR = 12, padT = 14, padB = 36;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const maxV = Math.max(...data.map(d => d.value), 1);
+  const niceMax = niceCeil(maxV);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  // y-axis grid lines
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const y = padT + innerH - (i / steps) * innerH;
+    const val = (niceMax * i / steps);
+    svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: padL + innerW, y2: y, stroke: '#e2e8f0', 'stroke-width': 1 }));
+    svg.appendChild(svgEl('text', { x: padL - 6, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: '#64748b' }, shortNum(val)));
+  }
+
+  const bw = innerW / data.length;
+  const barW = Math.max(8, Math.min(48, bw * 0.6));
+  data.forEach((d, i) => {
+    const x = padL + i * bw + (bw - barW) / 2;
+    const h = (d.value / niceMax) * innerH;
+    const y = padT + innerH - h;
+    const rect = svgEl('rect', {
+      x, y, width: barW, height: h,
+      fill: d.color || CHART_COLORS[i % CHART_COLORS.length],
+      rx: 4,
+    });
+    const tip = svgEl('title', {}, `${d.label}: ${d.value.toLocaleString('en-US')} MMK`);
+    rect.appendChild(tip);
+    svg.appendChild(rect);
+    // x label
+    const lbl = svgEl('text', {
+      x: x + barW / 2, y: padT + innerH + 14,
+      'text-anchor': 'middle', 'font-size': 10, fill: '#475569'
+    }, truncate(d.label, 8));
+    svg.appendChild(lbl);
+    // value label on top
+    if (d.value > 0) {
+      const vt = svgEl('text', {
+        x: x + barW / 2, y: y - 4,
+        'text-anchor': 'middle', 'font-size': 10, fill: '#0f172a'
+      }, shortNum(d.value));
+      svg.appendChild(vt);
+    }
+  });
+
+  // y axis label
+  svg.appendChild(svgEl('text', {
+    x: 8, y: padT - 4, 'font-size': 10, fill: '#64748b'
+  }, 'MMK'));
+
+  host.appendChild(svg);
+}
+
+function renderLineChart(host, data) {
+  host.innerHTML = '';
+  if (!data.length || data.every(d => !d.value)) {
+    renderEmptyChart(host);
+    return;
+  }
+  const W = 520, H = 220;
+  const padL = 50, padR = 12, padT = 14, padB = 36;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const maxV = Math.max(...data.map(d => d.value), 1);
+  const niceMax = niceCeil(maxV);
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  // grid
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const y = padT + innerH - (i / steps) * innerH;
+    svg.appendChild(svgEl('line', { x1: padL, y1: y, x2: padL + innerW, y2: y, stroke: '#e2e8f0', 'stroke-width': 1 }));
+    svg.appendChild(svgEl('text', { x: padL - 6, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: '#64748b' }, shortNum(niceMax * i / steps)));
+  }
+
+  const stepX = data.length > 1 ? innerW / (data.length - 1) : innerW;
+  const points = data.map((d, i) => {
+    const x = padL + i * stepX;
+    const y = padT + innerH - (d.value / niceMax) * innerH;
+    return { x, y, d };
+  });
+
+  // line
+  if (points.length > 1) {
+    const path = points.map((p, i) => (i === 0 ? 'M' : 'L') + p.x + ' ' + p.y).join(' ');
+    svg.appendChild(svgEl('path', { d: path, fill: 'none', stroke: '#2563eb', 'stroke-width': 2 }));
+    // area fill
+    const area = path + ` L ${points[points.length-1].x} ${padT+innerH} L ${points[0].x} ${padT+innerH} Z`;
+    svg.appendChild(svgEl('path', { d: area, fill: 'rgba(37,99,235,0.12)' }));
+  }
+  // points
+  points.forEach((p, i) => {
+    const c = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: '#2563eb', stroke: '#fff', 'stroke-width': 2 });
+    c.appendChild(svgEl('title', {}, `${p.d.label}: ${p.d.value.toLocaleString('en-US')} MMK`));
+    svg.appendChild(c);
+    // x label
+    if (data.length <= 24 || i % Math.ceil(data.length / 12) === 0) {
+      svg.appendChild(svgEl('text', {
+        x: p.x, y: padT + innerH + 14,
+        'text-anchor': 'middle', 'font-size': 10, fill: '#475569'
+      }, truncate(p.d.label, 6)));
+    }
+  });
+
+  host.appendChild(svg);
+}
+
+function renderPieChart(host, data) {
+  host.innerHTML = '';
+  // data: [{label, value, color}]
+  const total = data.reduce((s, d) => s + d.value, 0);
+  if (!total) {
+    renderEmptyChart(host);
+    return;
+  }
+  // Limit to top 10 + "Other"
+  const sorted = data.slice().sort((a, b) => b.value - a.value);
+  let top = sorted.slice(0, 10);
+  if (sorted.length > 10) {
+    const restSum = sorted.slice(10).reduce((s, d) => s + d.value, 0);
+    if (restSum > 0) top.push({ label: 'Other', value: restSum, color: '#94a3b8' });
+  }
+  const W = 320, H = 220;
+  const cx = 110, cy = 110, r = 90, ir = 0;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  let start = -Math.PI / 2;
+  top.forEach((d, i) => {
+    const angle = (d.value / total) * Math.PI * 2;
+    const end = start + angle;
+    const large = angle > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+    const path = `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+    const slice = svgEl('path', { d: path, fill: d.color || CHART_COLORS[i % CHART_COLORS.length], stroke: '#fff', 'stroke-width': 1.5 });
+    slice.appendChild(svgEl('title', {}, `${d.label}: ${d.value.toLocaleString('en-US')} MMK (${((d.value/total)*100).toFixed(1)}%)`));
+    svg.appendChild(slice);
+    start = end;
+  });
+
+  // legend
+  const legend = document.createElement('div');
+  legend.className = 'legend';
+  top.slice(0, 6).forEach((d, i) => {
+    const item = document.createElement('span');
+    item.innerHTML = `<span class="swatch" style="background:${d.color || CHART_COLORS[i % CHART_COLORS.length]}"></span>${escapeHtml(truncate(d.label, 12))} ${((d.value/total)*100).toFixed(0)}%`;
+    legend.appendChild(item);
+  });
+  if (top.length > 6) {
+    const more = document.createElement('span');
+    more.textContent = `+${top.length - 6} more`;
+    legend.appendChild(more);
+  }
+  host.appendChild(svg);
+  host.appendChild(legend);
+}
+
+function renderDonutChart(host, paid, expected) {
+  host.innerHTML = '';
+  const W = 280, H = 220;
+  const cx = 110, cy = 110, r = 90, ir = 55;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+  const total = Math.max(expected, paid, 1);
+  const paidAngle = expected > 0 ? (paid / expected) * Math.PI * 2 : 0;
+  const paidClamped = Math.min(paidAngle, Math.PI * 2);
+  const remaining = Math.max(0, Math.PI * 2 - paidClamped);
+
+  // Background full ring
+  svg.appendChild(svgEl('circle', { cx, cy, r, fill: 'none', stroke: '#e2e8f0', 'stroke-width': r - ir }));
+  // Paid arc
+  if (paidClamped > 0) {
+    const start = -Math.PI / 2;
+    const end = start + paidClamped;
+    const large = paidClamped > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+    const ix1 = cx + ir * Math.cos(end);
+    const iy1 = cy + ir * Math.sin(end);
+    const ix2 = cx + ir * Math.cos(start);
+    const iy2 = cy + ir * Math.sin(start);
+    const path = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix1} ${iy1} A ${ir} ${ir} 0 ${large} 0 ${ix2} ${iy2} Z`;
+    svg.appendChild(svgEl('path', { d: path, fill: '#16a34a', stroke: '#fff', 'stroke-width': 1.5 }));
+  }
+
+  // center text
+  const pct = expected > 0 ? Math.min(100, Math.round((paid / expected) * 100)) : 0;
+  svg.appendChild(svgEl('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 700, fill: '#0f172a' }, pct + '%'));
+  svg.appendChild(svgEl('text', { x: cx, y: cy + 22, 'text-anchor': 'middle', 'font-size': 11, fill: '#64748b' }, 'of expected'));
+
+  // legend
+  const legend = document.createElement('div');
+  legend.className = 'legend';
+  legend.innerHTML = `
+    <span><span class="swatch" style="background:#16a34a"></span>Paid ${paid.toLocaleString('en-US')}</span>
+    <span><span class="swatch" style="background:#e2e8f0"></span>Expected ${expected.toLocaleString('en-US')}</span>
+  `;
+  host.appendChild(svg);
+  host.appendChild(legend);
+}
+
+function niceCeil(v) {
+  if (v <= 0) return 1;
+  const exp = Math.floor(Math.log10(v));
+  const base = Math.pow(10, exp);
+  const m = v / base;
+  let nice;
+  if (m <= 1) nice = 1;
+  else if (m <= 2) nice = 2;
+  else if (m <= 2.5) nice = 2.5;
+  else if (m <= 5) nice = 5;
+  else nice = 10;
+  return nice * base;
+}
+
+function shortNum(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1) + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(n >= 10_000 ? 0 : 1) + 'k';
+  return String(Math.round(n));
+}
+
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n - 1) + '…' : s;
+}
+
+function memberTotals() {
+  // lifetime total per member
+  const totals = new Map();
+  state.members.forEach(m => totals.set(m.id, 0));
+  state.payments.forEach(p => {
+    if (totals.has(p.memberId)) totals.set(p.memberId, totals.get(p.memberId) + (p.amount || 0));
+  });
+  return totals;
+}
+
+function monthTotals() {
+  // total per month
+  const totals = new Map();
+  state.payments.forEach(p => {
+    if (!p.month) return;
+    totals.set(p.month, (totals.get(p.month) || 0) + (p.amount || 0));
+  });
+  return totals;
+}
+
+function monthPaymentCounts() {
+  const counts = new Map();
+  state.payments.forEach(p => {
+    if (!p.month) return;
+    counts.set(p.month, (counts.get(p.month) || 0) + 1);
+  });
+  return counts;
+}
+
 function renderDashboard() {
   const m = currentMonthKey();
-  const totalSaved = state.payments
-    .filter(p => p.month === m)
-    .reduce((s, p) => s + (p.amount || 0), 0);
+  const monthLabel = formatMonthLabel(m);
+  document.getElementById('stat-month-label').textContent = monthLabel;
+
+  // All-time total
+  const allTotal = state.payments.reduce((s, p) => s + (p.amount || 0), 0);
+  document.getElementById('stat-all-text').textContent = formatMyanmarAmount(allTotal);
+  document.getElementById('stat-all-num').textContent = allTotal.toLocaleString('en-US') + ' MMK';
+
+  // Current month
+  const totalSaved = state.payments.filter(p => p.month === m).reduce((s, p) => s + (p.amount || 0), 0);
+  document.getElementById('stat-month-text').textContent = formatMyanmarAmount(totalSaved);
+  document.getElementById('stat-month-num').textContent = totalSaved.toLocaleString('en-US') + ' MMK';
+
+  // Expected
   const expected = state.members.reduce((s, mem) => s + memberAmount(mem.id), 0);
+  document.getElementById('stat-expected-text').textContent = formatMyanmarAmount(expected);
+  document.getElementById('stat-expected-num').textContent = expected.toLocaleString('en-US') + ' MMK';
+
+  // Outstanding
   const outstanding = Math.max(0, expected - totalSaved);
+  document.getElementById('stat-out-text').textContent = formatMyanmarAmount(outstanding);
+  document.getElementById('stat-out-num').textContent = outstanding.toLocaleString('en-US') + ' MMK';
 
-  document.getElementById('stat-total').textContent = formatMoney(totalSaved, state.settings);
-  document.getElementById('stat-expected').textContent = formatMoney(expected, state.settings);
-  document.getElementById('stat-outstanding').textContent = formatMoney(outstanding, state.settings);
-  document.getElementById('stat-members').textContent = String(state.members.length);
+  // By month table
+  const mt = monthTotals();
+  const mc = monthPaymentCounts();
+  const monthRows = Array.from(mt.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  const monthBody = document.querySelector('#month-summary tbody');
+  monthBody.innerHTML = '';
+  if (monthRows.length === 0) {
+    monthBody.innerHTML = `<tr><td colspan="4" class="empty">No payments yet.</td></tr>`;
+  } else {
+    monthRows.forEach(([key, val]) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatMonthLabel(key)} <span class="badge">${key}</span></td>
+        <td>${formatMyanmarAmount(val)}</td>
+        <td>${val.toLocaleString('en-US')} MMK</td>
+        <td>${mc.get(key) || 0}</td>
+      `;
+      monthBody.appendChild(tr);
+    });
+  }
 
+  // Top contributors
+  const totals = memberTotals();
+  const topList = document.querySelector('#top-members');
+  topList.innerHTML = '';
+  const ranked = state.members
+    .map(m => ({ id: m.id, name: m.name, total: totals.get(m.id) || 0 }))
+    .sort((a, b) => b.total - a.total);
+  const top = ranked.filter(m => m.total > 0).slice(0, 8);
+  if (top.length === 0) {
+    topList.innerHTML = `<li class="empty">No payments yet.</li>`;
+  } else {
+    const max = top[0].total || 1;
+    top.forEach((m, i) => {
+      const pct = (m.total / max) * 100;
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <div style="flex:1;min-width:0;">
+          <div><span class="rank">${i + 1}.</span>${escapeHtml(m.name)} <span class="badge">${m.id}</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${CHART_COLORS[i % CHART_COLORS.length]}"></div></div>
+        </div>
+        <div style="text-align:right;white-space:nowrap;">
+          <div style="font-weight:600;">${formatMyanmarAmount(m.total)}</div>
+          <div style="font-size:12px;color:var(--muted);">${m.total.toLocaleString('en-US')}</div>
+        </div>
+      `;
+      topList.appendChild(li);
+    });
+  }
+
+  // Charts
+  // Bar / line: monthly totals in chronological order
+  const sortedMonths = Array.from(mt.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  const barData = sortedMonths.map(([key, val]) => ({ label: key, value: val, color: '#2563eb' }));
+  renderBarChart(document.getElementById('chart-bar-wrap'), barData);
+  renderLineChart(document.getElementById('chart-line-wrap'), barData);
+
+  // Pie: contribution share by member
+  const pieData = state.members.map((mem, i) => ({
+    label: mem.name,
+    value: totals.get(mem.id) || 0,
+    color: CHART_COLORS[i % CHART_COLORS.length],
+  })).filter(d => d.value > 0);
+  renderPieChart(document.getElementById('chart-pie-wrap'), pieData);
+
+  // Donut: expected vs paid (current month)
+  renderDonutChart(document.getElementById('chart-donut-wrap'), totalSaved, expected);
+
+  // By member (current month)
   const tbody = document.querySelector('#member-summary tbody');
   tbody.innerHTML = '';
   state.members.forEach((mem, idx) => {
@@ -1128,12 +1745,21 @@ function renderDashboard() {
     tr.innerHTML = `
       <td>${idx + 1}</td>
       <td>${escapeHtml(mem.name)} <span class="badge">${mem.id}</span></td>
-      <td>${formatMoney(exp, state.settings)}</td>
-      <td>${formatMoney(paid, state.settings)}</td>
+      <td>${formatMyanmarAmount(exp)}<div style="font-size:12px;color:var(--muted);">${exp.toLocaleString('en-US')}</div></td>
+      <td>${formatMyanmarAmount(paid)}<div style="font-size:12px;color:var(--muted);">${paid.toLocaleString('en-US')}</div></td>
       <td><span class="badge ${badgeClass}">${status}</span></td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+function formatMonthLabel(key) {
+  // key like "2026-09"
+  if (!key) return '';
+  const [y, mo] = key.split('-').map(Number);
+  if (!y || !mo) return key;
+  const d = new Date(y, mo - 1, 1);
+  return d.toLocaleDateString(state.settings.language === 'my' ? 'en-US' : 'en-US', { month: 'short', year: 'numeric' });
 }
 
 function escapeHtml(s) {
@@ -1219,7 +1845,7 @@ function updateAmountPreview() {
 document.getElementById('p-member').addEventListener('change', updateMemberHelp);
 document.getElementById('p-amount').addEventListener('input', updateAmountPreview);
 
-document.getElementById('payment-form').addEventListener('submit', (e) => {
+document.getElementById('payment-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const alert = document.getElementById('payment-alert');
   alert.innerHTML = '';
@@ -1240,21 +1866,20 @@ document.getElementById('payment-form').addEventListener('submit', (e) => {
     alert.innerHTML = `<div class="alert danger">Amount must be greater than 0.</div>`;
     return;
   }
-  const payment = {
-    id: 'pay_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-    memberId,
-    month,
-    amount,
-    amountInput: raw,
-    note,
-    createdAt: new Date().toISOString(),
-  };
-  state.payments.push(payment);
-  saveState();
-  alert.innerHTML = `<div class="alert success">✓ Payment saved: ${escapeHtml(memberById(memberId)?.name || '')} — ${formatMoney(amount, state.settings)} for ${month}</div>`;
-  document.getElementById('p-amount').value = '';
-  document.getElementById('p-note').value = '';
-  updateAmountPreview();
+  try {
+    await api('/api/payments', {
+      method: 'POST',
+      body: JSON.stringify({ memberId, month, amount, amountInput: raw, note }),
+    });
+    await refreshState();
+    alert.innerHTML = `<div class="alert success">✓ Payment saved: ${escapeHtml(memberById(memberId)?.name || '')} — ${formatMyanmarAmount(amount)} for ${month}</div>`;
+    document.getElementById('p-amount').value = '';
+    document.getElementById('p-note').value = '';
+    updateAmountPreview();
+    renderDashboard();
+  } catch (err) {
+    alert.innerHTML = `<div class="alert danger">Save failed: ${escapeHtml(err.message)}</div>`;
+  }
 });
 
 /* ============================================================
@@ -1295,7 +1920,7 @@ function renderMembersView() {
     });
   });
   tbody.querySelectorAll('[data-save]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       if (!adminSession) {
         alert('Admin sign-in required.');
         return;
@@ -1303,18 +1928,26 @@ function renderMembersView() {
       const id = btn.dataset.save;
       const inp = tbody.querySelector(`.member-amt-input[data-id="${id}"]`);
       const v = inp.value.trim();
-      if (v === '' || /^default$/i.test(v)) {
-        delete state.settings.memberAmounts[id];
-      } else {
-        const parsed = parseMyanmarAmount(v);
-        if (parsed == null) {
-          alert('Could not understand custom amount.');
-          return;
+      try {
+        if (v === '' || /^default$/i.test(v)) {
+          await api('/api/members/' + encodeURIComponent(id) + '/amount', { method: 'DELETE' });
+        } else {
+          const parsed = parseMyanmarAmount(v);
+          if (parsed == null) {
+            alert('Could not understand custom amount.');
+            return;
+          }
+          await api('/api/members/' + encodeURIComponent(id) + '/amount', {
+            method: 'PUT',
+            body: JSON.stringify({ amount: parsed }),
+          });
         }
-        state.settings.memberAmounts[id] = parsed;
+        await refreshState();
+        renderMembersView();
+        renderDashboard();
+      } catch (err) {
+        alert('Save failed: ' + err.message);
       }
-      saveState();
-      renderMembersView();
     });
   });
 }
@@ -1368,16 +2001,21 @@ function renderPaymentsView() {
   });
 
   tbody.querySelectorAll('[data-del]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       if (!adminSession) {
         alert('Admin sign-in required.');
         return;
       }
       if (!confirm('Delete this payment?')) return;
       const id = btn.dataset.del;
-      state.payments = state.payments.filter(p => p.id !== id);
-      saveState();
-      renderPaymentsView();
+      try {
+        await api('/api/payments/' + encodeURIComponent(id), { method: 'DELETE' });
+        await refreshState();
+        renderPaymentsView();
+        renderDashboard();
+      } catch (err) {
+        alert('Delete failed: ' + err.message);
+      }
     });
   });
 }
@@ -1398,15 +2036,20 @@ document.getElementById('btn-export').addEventListener('click', () => {
   a.click();
   URL.revokeObjectURL(url);
 });
-document.getElementById('btn-clear-all').addEventListener('click', () => {
+document.getElementById('btn-clear-all').addEventListener('click', async () => {
   if (!adminSession) {
     alert('Admin sign-in required.');
     return;
   }
   if (!confirm('Delete ALL payments? This cannot be undone.')) return;
-  state.payments = [];
-  saveState();
-  renderPaymentsView();
+  try {
+    await api('/api/payments/clear', { method: 'POST', body: '{}' });
+    await refreshState();
+    renderPaymentsView();
+    renderDashboard();
+  } catch (err) {
+    alert('Failed: ' + err.message);
+  }
 });
 
 /* ============================================================
@@ -1443,7 +2086,7 @@ document.getElementById('display-mode-pills').addEventListener('click', (e) => {
   document.querySelectorAll('#display-mode-pills .pill').forEach(p => p.classList.remove('active'));
   pill.classList.add('active');
 });
-document.getElementById('save-settings').addEventListener('click', () => {
+document.getElementById('save-settings').addEventListener('click', async () => {
   if (!adminSession) {
     alert('Admin sign-in required.');
     return;
@@ -1454,15 +2097,22 @@ document.getElementById('save-settings').addEventListener('click', () => {
     alert('Default amount could not be understood.');
     return;
   }
-  state.settings.defaultAmount = parsed;
-  state.settings.defaultAmountInput = raw;
-  state.settings.language = document.getElementById('set-lang').value;
+  const newSettings = {
+    defaultAmount: parsed,
+    defaultAmountInput: raw,
+    language: document.getElementById('set-lang').value,
+  };
   const activePill = document.querySelector('#display-mode-pills .pill.active');
-  if (activePill) state.settings.displayMode = activePill.dataset.mode;
-  saveState();
-  alert('Settings saved.');
-  renderDashboard();
-  updateHeaderSub();
+  if (activePill) newSettings.displayMode = activePill.dataset.mode;
+  try {
+    await api('/api/settings', { method: 'PUT', body: JSON.stringify(newSettings) });
+    await refreshState();
+    alert('Settings saved.');
+    renderDashboard();
+    updateHeaderSub();
+  } catch (err) {
+    alert('Save failed: ' + err.message);
+  }
 });
 
 function updateHeaderSub() {
@@ -1470,7 +2120,7 @@ function updateHeaderSub() {
     `${state.members.length} members · Default: ${formatMyanmarAmount(state.settings.defaultAmount)}`;
 }
 
-document.getElementById('change-pin').addEventListener('click', () => {
+document.getElementById('change-pin').addEventListener('click', async () => {
   if (!adminSession) {
     document.getElementById('change-pin-msg').textContent = 'Sign in first.';
     return;
@@ -1478,6 +2128,7 @@ document.getElementById('change-pin').addEventListener('click', () => {
   const cur = document.getElementById('cur-pin').value;
   const next = document.getElementById('new-pin').value;
   const msg = document.getElementById('change-pin-msg');
+  msg.style.color = '';
   if (!tryAdminSignIn(cur)) {
     msg.textContent = 'Current PIN incorrect.';
     msg.style.color = 'var(--danger)';
@@ -1488,11 +2139,22 @@ document.getElementById('change-pin').addEventListener('click', () => {
     msg.style.color = 'var(--danger)';
     return;
   }
-  setAdminPinHash(sha256Hex(next));
-  msg.textContent = '✓ PIN updated.';
-  msg.style.color = 'var(--success)';
-  document.getElementById('cur-pin').value = '';
-  document.getElementById('new-pin').value = '';
+  try {
+    await api('/api/admin-pin', {
+      method: 'PUT',
+      headers: { 'x-admin-pin': cur },
+      body: JSON.stringify({ newPin: next }),
+    });
+    setAdminPinHash(sha256Hex(next));
+    currentPin = next;
+    msg.textContent = '✓ PIN updated on server.';
+    msg.style.color = 'var(--success)';
+    document.getElementById('cur-pin').value = '';
+    document.getElementById('new-pin').value = '';
+  } catch (err) {
+    msg.textContent = 'Failed: ' + err.message;
+    msg.style.color = 'var(--danger)';
+  }
 });
 
 /* ============================================================
@@ -1561,10 +2223,61 @@ document.getElementById('run-tests').addEventListener('click', () => {
    INITIAL RENDER
    ============================================================ */
 
-renderAdminBar();
-applyAdminLocks();
-updateHeaderSub();
-renderDashboard();
+async function bootstrap() {
+  renderAdminBar();
+  applyAdminLocks();
+  updateHeaderSub();
+  try {
+    await loadStateFromServer();
+  } catch (e) {
+    showOfflineBanner();
+  }
+  renderDashboard();
+
+  // Periodic refresh so multiple users see each other's writes.
+  setInterval(async () => {
+    try {
+      const before = JSON.stringify(state);
+      await refreshState();
+      const after = JSON.stringify(state);
+      if (before !== after) {
+        // re-render any visible views
+        const active = document.querySelector('.view.active');
+        if (active) {
+          if (active.id === 'view-dashboard') renderDashboard();
+          if (active.id === 'view-payments') renderPaymentsView();
+          if (active.id === 'view-members') renderMembersView();
+          if (active.id === 'view-settings') renderSettingsView();
+        }
+        updateHeaderSub();
+      }
+    } catch (e) {
+      /* offline */
+    }
+  }, 8000);
+}
+
+function showOfflineBanner() {
+  const host = document.querySelector('main');
+  if (!host) return;
+  const banner = document.createElement('div');
+  banner.className = 'alert danger';
+  banner.id = 'offline-banner';
+  banner.textContent = '⚠ Server unreachable. Showing last cached data. Changes will not be saved until the server is back.';
+  host.insertBefore(banner, host.firstChild);
+}
+
+bootstrap();
+
+// Re-render charts on resize for best label fit (debounced)
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    const dash = document.getElementById('view-dashboard');
+    if (dash && dash.classList.contains('active')) renderDashboard();
+  }, 150);
+});
 
 // Expose for debugging
 window.__app = { state, parseMyanmarAmount, formatMyanmarAmount, formatMoney, formatMyanmarDigits, formatNumeric };
