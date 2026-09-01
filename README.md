@@ -2,32 +2,31 @@
 
 A web app for tracking monthly savings across members, with Myanmar-friendly
 amount input ("၁သိန်း", "၁သိန်းခွဲ", "10,000", "100k", …), analytics charts,
-and admin-gated writes. State is shared across users via a tiny Node.js
-file-storage backend (`server.js` + `data.json`).
+and admin-gated writes. State is shared across users via a tiny PHP + SQLite
+backend (`server.php` + `data.sqlite`).
 
 ## Quick start
 
 ```
-npm install
-npm start           # serves http://localhost:3000
+php -S 0.0.0.0:3000 server.php
 ```
 
 Then open http://localhost:3000 in any browser. All clients see the same data.
 
+No external PHP dependencies — uses the built-in `php -S` server, PDO, and
+the bundled `pdo_sqlite` extension (enabled by default in PHP 8).
+
 ## Environment variables
 
-| Variable    | Default       | Description                                    |
-| ----------- | ------------- | ---------------------------------------------- |
-| `PORT`      | `3000`        | Port to listen on                              |
-| `HOST`      | `0.0.0.0`     | Host to bind                                   |
-| `DATA_FILE` | `./data.json` | Path to the JSON data file                     |
-| `ADMIN_PIN` | `9876`        | Admin PIN. Admin can also rotate it in Settings |
+| Variable    | Default              | Description                                |
+| ----------- | ------------------- | ------------------------------------------ |
+| `ADMIN_PIN` | `9876`              | Initial admin PIN. Persisted in admin-pin.txt once changed via Settings. |
 
 ## Admin PIN
 
 Default is `9876`. Admins sign in (top-right of the page) to add payments,
 edit per-member amounts, delete payments, and change settings. PIN changes
-are saved server-side via `PUT /api/admin-pin`.
+are saved server-side via `PUT /api/admin-pin` (persists to `admin-pin.txt`).
 
 ## REST API
 
@@ -51,9 +50,9 @@ Send the PIN via header `x-admin-pin: <pin>` or in the JSON body as `pin`.
 
 ## File layout
 
-| File           | Purpose                                                  |
-| -------------- | -------------------------------------------------------- |
-| `index.html`   | Entire frontend (HTML + CSS + JS, no build step)         |
-| `server.js`    | Express backend, reads/writes `data.json`                |
-| `data.json`    | Shared state (auto-created on first run)                 |
-| `package.json` | npm metadata + dependencies                              |
+| File              | Purpose                                                  |
+| ----------------- | -------------------------------------------------------- |
+| `index.html`      | Entire frontend (HTML + CSS + JS, no build step)         |
+| `server.php`      | PHP API + static file server, uses PDO + SQLite          |
+| `data.sqlite`     | Shared SQLite database (auto-created on first run)       |
+| `admin-pin.txt`   | Persisted admin PIN (created on first rotation)          |
