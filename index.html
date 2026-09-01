@@ -845,9 +845,8 @@ function formatMoney(amount, settings) {
 const STORAGE_KEY = 'suboo.app.v1';
 const ADMIN_KEY = 'suboo.admin.v1';
 
-// Default admin PIN. Hash here is sha-256 of "1234" (default). Admin can change
-// it from Settings once signed in.
-const DEFAULT_ADMIN_PIN_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+// Default admin PIN. Hash here is for "9876". Admin can change it from Settings once signed in.
+const DEFAULT_ADMIN_PIN_HASH = '0001a9ffb1a2faab';
 
 function sha256Hex(text) {
   // Synchronous-ish helper: use SubtleCrypto but return a promise-friendly sync.
@@ -878,12 +877,11 @@ const DEFAULT_MEMBERS = [
   { id: 'member_009', name: 'min khant kyaw2' },
   { id: 'member_010', name: 'win Myat tun' },
   { id: 'member_011', name: 'sai zaw zaw' },
-  { id: 'member_012', name: 'Wai Lin tun' },
-  { id: 'member_013', name: 'Wai Yan Phyo' },
-  { id: 'member_014', name: 'Wai moe' },
-  { id: 'member_015', name: 'Hein thiha' },
-  { id: 'member_016', name: 'bobo Aung' },
-  { id: 'member_017', name: 'chit photo Aung' },
+  { id: 'member_012', name: 'Wai moe' },
+  { id: 'member_013', name: 'Hein thiha' },
+  { id: 'member_014', name: 'bobo Aung' },
+  { id: 'member_015', name: 'win moe aung' },
+  { id: 'member_016', name: 'aung myo thant' },
 ];
 
 const DEFAULT_SETTINGS = {
