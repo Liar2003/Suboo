@@ -19,6 +19,7 @@ const state = {
   year: parseInt(LS.get('year', String(new Date().getFullYear())), 10),
   route: 'dashboard',
   routeParam: null,
+  auth: false,
   cache: {},
 };
 
@@ -27,6 +28,21 @@ const T = {
   mm: {
     'app.title': 'လစဉ်စုဆောင်းငွေ စီမံခန့်ခွဲမှု',
     'app.subtitle': 'အဖွဲ့လိုက် စုဆောင်ငွေ စီမံခန့်ခွဲသူ',
+    'login.subtitle': 'စီမံခန့်ခွဲသူ လော့ဂ်အင်',
+    'login.password': 'စီမံခန့်ခွဲသူ စကားဝှက်',
+    'login.submit': 'လော့ဂ်အင်',
+    'login.guest': 'ဧည့်သည်အဖြစ် ဆက်လက်ကြည့်ရှုမည်',
+    'login.hint': 'မူလ - admin123 — Settings တွင် ပြောင်းပါ။',
+    'login.invalid': 'စကားဝှက် မှားယွင်းနေပါသည်',
+    'login.required_title': 'စီမံခန့်ခွဲသူ လော့ဂ်အင် လိုအပ်ပါသည်',
+    'login.required_msg': 'ဒေတာ ပြင်ဆင်ရန် စီမံခန့်ခွဲသူ အကောင့်ဖြင့် ဝင်ရောက်ပါ။',
+    'login.locked_banner': 'ဤစာမျက်နှာကို ကြည့်ရှုနိုင်သည်။ ပြင်ဆင်ရန် စီမံခန့်ခွဲသူ လော့ဂ်အင် လိုအပ်ပါသည်။',
+    'admin.logout': 'ထွက်ရန်',
+    'admin.signed_in_as': 'စီမံခန့်ခွဲသူ',
+    'admin.change_password': 'စကားဝှက် ပြောင်းရန်',
+    'admin.current_password': 'လက်ရှိ စကားဝှက်',
+    'admin.new_password': 'စကားဝှက် အသစ်',
+    'admin.password_changed': 'စကားဝှက် ပြောင်းပြီး',
     'nav.dashboard': 'ပင်မမျက်နှာပြင်',
     'nav.monthly':   'လစဉ်ပေးချေမှု',
     'nav.members':   'အဖွဲ့ဝင်များ',
@@ -198,6 +214,21 @@ const T = {
   en: {
     'app.title': 'Monthly Savings',
     'app.subtitle': 'Group savings manager',
+    'login.subtitle': 'Admin sign-in',
+    'login.password': 'Admin password',
+    'login.submit': 'Sign in',
+    'login.guest': 'Continue as Guest',
+    'login.hint': 'Default: admin123 — change it in Settings.',
+    'login.invalid': 'Incorrect password',
+    'login.required_title': 'Admin login required',
+    'login.required_msg': 'Please sign in as admin to make changes.',
+    'login.locked_banner': 'View-only. Sign in as admin to edit data.',
+    'admin.logout': 'Sign out',
+    'admin.signed_in_as': 'Admin',
+    'admin.change_password': 'Change password',
+    'admin.current_password': 'Current password',
+    'admin.new_password': 'New password',
+    'admin.password_changed': 'Password changed',
     'nav.dashboard': 'Dashboard',
     'nav.monthly':   'Monthly',
     'nav.members':   'Members',
@@ -537,15 +568,31 @@ async function api(action, params = {}, method = 'GET', body = null) {
   for (const [k, v] of Object.entries(params || {})) {
     if (v != null) url.searchParams.set(k, v);
   }
-  const opt = { method, headers: { 'Accept': 'application/json' } };
+  const opt = { method, headers: { 'Accept': 'application/json' }, credentials: 'same-origin' };
   if (body && method !== 'GET') {
     opt.headers['Content-Type'] = 'application/json';
     opt.body = JSON.stringify(body);
   }
   const r = await fetch(url, opt);
   const j = await r.json().catch(() => ({ success: false, error: 'Bad response' }));
+  if (r.status === 401 || (j && j.error === 'auth_required')) {
+    state.auth = false;
+    showLogin();
+    throw new Error('auth_required');
+  }
   if (!j.success) throw new Error(j.error || 'Request failed');
   return j.data;
+}
+
+// Write action: triggers the login overlay if not authed; resolves true if the user became authed.
+async function ensureAuth() {
+  if (state.auth) return true;
+  try {
+    const s = await api('auth_status');
+    if (s && s.auth) { state.auth = true; hideLogin(); return true; }
+  } catch (e) {}
+  showLogin();
+  return false;
 }
 
 // ----------------------- DOM helpers ------------------------------------
@@ -646,6 +693,79 @@ function setupTopbar() {
   yp.addEventListener('change', () => { state.year = parseInt(yp.value, 10); LS.set('year', String(state.year)); route(); });
 }
 
+// ----------------------- Auth UI ---------------------------------------
+function showLogin() {
+  const ls = $('#login-screen');
+  if (ls) ls.hidden = false;
+  document.body.classList.add('locked');
+  // Focus the password field next tick
+  setTimeout(() => { const f = ls && ls.querySelector('input[name=password]'); if (f) f.focus(); }, 30);
+}
+function hideLogin() {
+  const ls = $('#login-screen');
+  if (ls) ls.hidden = true;
+  document.body.classList.remove('locked');
+}
+function setAuthUi() {
+  // Toggle admin-only affordances
+  $$('.admin-only').forEach(b => b.disabled = !state.auth);
+  // Topbar sign-in / out button
+  const btn = $('#auth-btn');
+  if (btn) {
+    btn.textContent = state.auth ? t('admin.logout') : t('login.submit');
+    btn.classList.toggle('primary-btn', !state.auth);
+    btn.classList.toggle('ghost-btn', state.auth);
+  }
+  // Locked banner
+  $$('.locked-banner').forEach(b => b.remove());
+  if (!state.auth) {
+    const banner = el('div', { class: 'locked-banner' },
+      el('span', {}, '🔒 ' + t('login.locked_banner')),
+      el('button', { class: 'ghost-btn', on: { click: showLogin } }, t('login.submit'))
+    );
+    const c = $('#content'); if (c) c.prepend(banner);
+  }
+}
+async function doLogin(password) {
+  try {
+    await api('login', {}, 'POST', { password });
+    state.auth = true;
+    hideLogin();
+    setAuthUi();
+    toast(t('login.submit'), 'good', 1200);
+    route();
+    return true;
+  } catch (e) {
+    const err = $('#login-error');
+    if (err) { err.textContent = t('login.invalid'); err.hidden = false; }
+    return false;
+  }
+}
+async function doLogout() {
+  try { await api('logout', {}, 'POST'); } catch (e) {}
+  state.auth = false;
+  showLogin();
+  setAuthUi();
+}
+function bindLoginForm() {
+  const form = $('#login-form');
+  if (form) form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pw = form.querySelector('input[name=password]').value;
+    const ok = await doLogin(pw);
+    if (ok) form.querySelector('input[name=password]').value = '';
+  });
+  const guest = $('#guest-btn');
+  if (guest) guest.addEventListener('click', () => enterAsGuest());
+}
+function enterAsGuest() {
+  state.auth = false;
+  hideLogin();
+  setAuthUi();
+  if (!location.hash) location.hash = '#/dashboard';
+  route();
+}
+
 // ----------------------- Sidebar / theme / lang ------------------------
 function applyTheme() {
   let th = state.theme;
@@ -691,7 +811,8 @@ function setupShell() {
     api('settings', {}, 'POST', { theme: state.theme }).catch(() => {});
     applyTheme();
   });
-  $('#quick-pay').addEventListener('click', () => openPaymentModal());
+  $('#quick-pay').addEventListener('click', async () => { if (await ensureAuth()) openPaymentModal(); });
+  $('#auth-btn').addEventListener('click', () => { if (state.auth) doLogout(); else showLogin(); });
   // Global search
   const g = $('#global-search');
   const r = $('#search-results');
@@ -731,6 +852,7 @@ function setupShell() {
   // Hash routing
   window.addEventListener('hashchange', route);
   setupTopbar();
+  bindLoginForm();
 }
 
 // ----------------------- Routing --------------------------------------
@@ -770,6 +892,7 @@ async function route() {
     else { c.innerHTML = '<div class="empty">404</div>'; setTitle('404'); }
     c.classList.add('fade-in');
     trAll(c);
+    setAuthUi();
   } catch (e) {
     console.error(e);
     c.innerHTML = '<div class="empty">' + escapeHTML(e.message) + '</div>';
@@ -944,8 +1067,8 @@ async function renderDashboard() {
       el('td', { class: 'center', html: m.paid ? `<span class="badge paid">${t('status.paid')}</span>` : `<span class="badge unpaid">${t('status.unpaid')}</span>` }),
       el('td', { class: 'center' },
         m.paid
-          ? el('button', { class: 'ghost-btn', on: { click: () => openPaymentModal({ member_id: m.id, month: d.month, unpaid: true }) } }, t('action.mark_unpaid'))
-          : el('button', { class: 'primary-btn', on: { click: () => openPaymentModal({ member_id: m.id, month: d.month }) } }, t('action.mark_paid'))
+          ? el('button', { class: 'ghost-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: d.month, unpaid: true }); } } }, t('action.mark_unpaid'))
+          : el('button', { class: 'primary-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: d.month }); } } }, t('action.mark_paid'))
       )
     );
     mstb.appendChild(tr);
@@ -992,7 +1115,7 @@ async function renderMonthly() {
   `;
   $('#m-prev').addEventListener('click', () => { state.month = addMonth(state.month, -1); LS.set('month', state.month); $('#month-picker').value = state.month; route(); });
   $('#m-next').addEventListener('click', () => { state.month = addMonth(state.month, 1); LS.set('month', state.month); $('#month-picker').value = state.month; route(); });
-  $('#bulk-pay-btn').addEventListener('click', () => openBulkModal());
+  $('#bulk-pay-btn').addEventListener('click', async () => { if (await ensureAuth()) openBulkModal(); });
   const tbody = $('#month-table tbody');
   for (const m of ms) {
     const tr = el('tr', {},
@@ -1005,10 +1128,10 @@ async function renderMonthly() {
       el('td', { class: 'center' },
         m.paid
           ? el('div', { class: 'row' },
-              el('button', { class: 'ghost-btn', on: { click: () => openPaymentModal({ member_id: m.id, month: state.month }) } }, t('action.edit')),
-              el('button', { class: 'danger-btn', on: { click: () => deletePaymentFor(m.id, state.month) } }, t('action.delete'))
+              el('button', { class: 'ghost-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: state.month }); } } }, t('action.edit')),
+              el('button', { class: 'danger-btn admin-only', on: { click: () => deletePaymentFor(m.id, state.month) } }, t('action.delete'))
             )
-          : el('button', { class: 'primary-btn', on: { click: () => openPaymentModal({ member_id: m.id, month: state.month }) } }, t('action.mark_paid'))
+          : el('button', { class: 'primary-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: state.month }); } } }, t('action.mark_paid'))
       )
     );
     tbody.appendChild(tr);
@@ -1050,7 +1173,7 @@ async function renderMembers() {
     </div>
     <div id="members-grid" class="member-grid"></div>
   `;
-  $('#add-member').addEventListener('click', () => openMemberModal());
+  $('#add-member').addEventListener('click', async () => { if (await ensureAuth()) openMemberModal(); });
   $('#m-search').addEventListener('input', debounce(() => load(), 200));
   $('#m-filter').addEventListener('change', () => load());
 
@@ -1090,9 +1213,9 @@ async function renderMembers() {
           ),
           el('div', { class: 'member-actions' },
             el('button', { class: 'ghost-btn', on: { click: () => location.hash = '#/member/' + m.id } }, t('action.edit')),
-            el('button', { class: 'ghost-btn', on: { click: () => openMemberModal(m) } }, t('member.title')),
-            el('button', { class: 'ghost-btn', on: { click: () => toggleMember(m.id) } }, m.active ? t('action.deactivate') : t('action.activate')),
-            el('button', { class: 'danger-btn', on: { click: () => deleteMember(m.id, m.name) } }, t('action.delete')),
+            el('button', { class: 'ghost-btn admin-only', on: { click: async () => { if (await ensureAuth()) openMemberModal(m); } } }, t('member.title')),
+            el('button', { class: 'ghost-btn admin-only', on: { click: () => toggleMember(m.id) } }, m.active ? t('action.deactivate') : t('action.activate')),
+            el('button', { class: 'danger-btn admin-only', on: { click: () => deleteMember(m.id, m.name) } }, t('action.delete')),
           )
         )
       );
@@ -1103,10 +1226,12 @@ async function renderMembers() {
 }
 
 async function toggleMember(id) {
+  if (!await ensureAuth()) return;
   await api('members', { action: 'toggle' }, 'POST', { id });
   route();
 }
 async function deleteMember(id, name) {
+  if (!await ensureAuth()) return;
   confirmModal(t('action.delete') + ' ' + name + '?', async () => {
     await api('members', { action: 'delete' }, 'POST', { id });
     toast(t('member.deleted'), 'good');
@@ -1164,8 +1289,8 @@ async function renderMember(id) {
       </table></div>
     </div>
   `;
-  $('#m-edit').addEventListener('click', () => openMemberModal(m));
-  $('#m-toggle').addEventListener('click', async () => { await api('members', { action: 'toggle' }, 'POST', { id }); route(); });
+  $('#m-edit').addEventListener('click', async () => { if (await ensureAuth()) openMemberModal(m); });
+  $('#m-toggle').addEventListener('click', async () => { if (await ensureAuth()) { await api('members', { action: 'toggle' }, 'POST', { id }); route(); } });
   $('#m-del').addEventListener('click', () => deleteMember(m.id, m.name));
 
   drawLineChart($('#m-chart'), data.months.map(x => ({ x: x.month, y: x.paid ? x.amount : 0, label: monthName(x.month, state.lang), extra: { paid: x.paid, expected: x.expected } })), { yLabel: 'MMK' });
@@ -1181,16 +1306,17 @@ async function renderMember(id) {
       el('td', { class: 'center' },
         row.paid
           ? el('div', { class: 'row' },
-              el('button', { class: 'ghost-btn', on: { click: () => openPaymentModal({ id: row.id, member_id: m.id, month: row.month, amount: row.amount, paid_at: row.paid_at, note: row.note }) } }, t('action.edit')),
-              el('button', { class: 'danger-btn', on: { click: () => deletePayment(row.id) } }, t('action.delete'))
+              el('button', { class: 'ghost-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ id: row.id, member_id: m.id, month: row.month, amount: row.amount, paid_at: row.paid_at, note: row.note }); } } }, t('action.edit')),
+              el('button', { class: 'danger-btn admin-only', on: { click: () => deletePayment(row.id) } }, t('action.delete'))
             )
-          : el('button', { class: 'primary-btn', on: { click: () => openPaymentModal({ member_id: m.id, month: row.month }) } }, t('action.mark_paid'))
+          : el('button', { class: 'primary-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: row.month }); } } }, t('action.mark_paid'))
       )
     );
     tb.appendChild(tr);
   }
 }
 async function deletePayment(id) {
+  if (!await ensureAuth()) return;
   confirmModal(t('action.delete') + '?', async () => {
     await api('delete_payment', {}, 'POST', { id });
     toast(t('payment.deleted'), 'good');
@@ -1363,11 +1489,19 @@ async function renderSettings() {
               <option value="en">English</option>
             </select>
           </label>
-          <div><button class="primary-btn" id="s-save">${t('action.save')}</button></div>
+          <div><button class="primary-btn admin-only" id="s-save">${t('action.save')}</button></div>
         </div>
       </div>
       <div class="section">
-        <h3>${t('settings.title')}</h3>
+        <h3>${t('admin.change_password')}</h3>
+        <div class="grid" style="gap:12px">
+          <label class="field"><span>${t('admin.current_password')}</span>
+            <input id="pw-cur" type="password" autocomplete="current-password"></label>
+          <label class="field"><span>${t('admin.new_password')}</span>
+            <input id="pw-new" type="password" autocomplete="new-password"></label>
+          <div><button class="primary-btn admin-only" id="pw-change">${t('admin.change_password')}</button></div>
+        </div>
+        <h3 style="margin-top:18px">${t('app.title')}</h3>
         <p class="muted">${t('app.subtitle')}</p>
         <p class="muted">v1.0 • PHP ${state.mode}</p>
       </div>
@@ -1378,6 +1512,7 @@ async function renderSettings() {
   $('#s-lang').value = state.lang;
   bindAmountPreview($('#s-default'), $('#s-default').nextElementSibling);
   $('#s-save').addEventListener('click', async () => {
+    if (!await ensureAuth()) return;
     const payload = {
       group_name: $('#s-group').value.trim() || 'Monthly Savings',
       default_amount: $('#s-default').value,
@@ -1392,6 +1527,16 @@ async function renderSettings() {
     applyTheme(); applyLang();
     toast(t('settings.saved'), 'good');
   });
+  $('#pw-change').addEventListener('click', async () => {
+    if (!await ensureAuth()) return;
+    const cur = $('#pw-cur').value, nw = $('#pw-new').value;
+    if (!cur || !nw) { toast('Fill both fields', 'warn'); return; }
+    try {
+      await api('change_password', {}, 'POST', { current: cur, new: nw });
+      toast(t('admin.password_changed'), 'good');
+      $('#pw-cur').value = ''; $('#pw-new').value = '';
+    } catch (err) { toast(err.message, 'bad'); }
+  });
 }
 
 // ----------------------- Backup ----------------------------------------
@@ -1403,10 +1548,11 @@ async function renderBackup() {
       <div class="section">
         <h3>${t('backup.title')}</h3>
         <div class="row" style="flex-wrap:wrap">
-          <a class="primary-btn" href="?api=export&format=json">${t('backup.export_json')}</a>
-          <a class="ghost-btn" href="?api=export&format=sqlite">${t('backup.export_sqlite')}</a>
-          <a class="ghost-btn" href="?api=export&format=csv">${t('backup.export_csv')}</a>
+          <button class="primary-btn admin-only" id="ex-json">${t('backup.export_json')}</button>
+          <button class="ghost-btn admin-only" id="ex-sqlite">${t('backup.export_sqlite')}</button>
+          <button class="ghost-btn admin-only" id="ex-csv">${t('backup.export_csv')}</button>
         </div>
+        <p class="muted" style="margin-top:8px">🔒 ${t('login.locked_banner')}</p>
       </div>
       <div class="section">
         <h3>${t('backup.import_json')}</h3>
@@ -1416,13 +1562,25 @@ async function renderBackup() {
           <label class="field"><span>${t('field.name')}</span>
             <input type="file" name="file" accept="application/json,.json"></label>
           <p class="muted">${t('backup.warning')}</p>
-          <button class="primary-btn" type="submit">${t('action.import')}</button>
+          <button class="primary-btn admin-only" type="submit">${t('action.import')}</button>
         </form>
       </div>
     </div>
   `;
+  async function downloadExport(fmt) {
+    if (!await ensureAuth()) return;
+    const url = '?api=export&format=' + encodeURIComponent(fmt);
+    // Use a hidden link so the auth cookie is sent
+    const a = document.createElement('a');
+    a.href = url; a.download = '';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  $('#ex-json').addEventListener('click', () => downloadExport('json'));
+  $('#ex-sqlite').addEventListener('click', () => downloadExport('sqlite'));
+  $('#ex-csv').addEventListener('click', () => downloadExport('csv'));
   $('#imp-form').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!await ensureAuth()) return;
     const fd = new FormData(e.target);
     const file = fd.get('file');
     if (!file || !file.name) { toast('Select a file', 'warn'); return; }
@@ -1759,8 +1917,20 @@ function countUp(node, target) {
 }
 
 // ----------------------- Boot ------------------------------------------
-function boot() {
+async function boot() {
   setupShell();
+  // Check auth status from server
+  try {
+    const s = await api('auth_status');
+    state.auth = !!(s && s.auth);
+  } catch (e) { state.auth = false; }
+  if (state.auth) {
+    hideLogin();
+  } else {
+    // Show login chooser (Sign in OR Continue as Guest)
+    showLogin();
+  }
+  setAuthUi();
   if (!location.hash) location.hash = '#/dashboard';
   route();
 }

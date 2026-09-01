@@ -125,6 +125,15 @@ function init_schema(PDO $pdo, bool $firstRun): void {
             value TEXT
         );
     ");
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ip TEXT NOT NULL,
+            success INTEGER NOT NULL DEFAULT 0,
+            attempted_at TEXT NOT NULL
+        );
+    ");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_login_ip_time ON login_attempts(ip, attempted_at);");
 
     $defaults = [
         'default_amount'      => '10000',
@@ -151,6 +160,48 @@ function init_schema(PDO $pdo, bool $firstRun): void {
         foreach ($names as $n) $insM->execute([$n, 1, 10000, null, $now, $now]);
         $pdo->prepare("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('schema_version',?)")->execute(['1']);
     }
+    if ($cur < 2) {
+        // Schema v2: add admin password (default: 'admin123' — must be changed in Settings)
+        $pdo->prepare("INSERT OR IGNORE INTO settings(key,value) VALUES('admin_password_hash', ?)")
+            ->execute([password_hash('admin123', PASSWORD_BCRYPT)]);
+        $pdo->prepare("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('schema_version',?)")->execute(['2']);
+    }
+}
+
+// ----------------------- Admin authentication -----------------------------
+function start_session_once(): void {
+    if (session_status() === PHP_SESSION_ACTIVE) return;
+    ini_set('session.cookie_httponly', '1');
+    ini_set('session.cookie_samesite', 'Lax');
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.gc_maxlifetime', '7200');
+    session_name('SUBOOSESSID');
+    session_start();
+}
+function is_authed(): bool {
+    start_session_once();
+    return !empty($_SESSION['auth_ok']) && $_SESSION['auth_ok'] === true;
+}
+function require_auth(): void {
+    if (!is_authed()) {
+        http_response_code(401);
+        echo json_encode(['success' => false, 'error' => 'auth_required', 'message' => 'Admin login required']);
+        exit;
+    }
+}
+function client_ip(): string {
+    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+}
+function too_many_attempts(string $ip): bool {
+    $pdo = db();
+    $since = gmdate('Y-m-d H:i:s', time() - 900); // 15 min
+    $st = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip=? AND success=0 AND attempted_at>=?");
+    $st->execute([$ip, $since]);
+    return ((int)$st->fetchColumn()) >= 8;
+}
+function record_attempt(string $ip, bool $success): void {
+    db()->prepare("INSERT INTO login_attempts(ip,success,attempted_at) VALUES(?,?,?)")
+        ->execute([$ip, $success ? 1 : 0, now()]);
 }
 
 // ----------------------------- Helpers -----------------------------------
@@ -354,6 +405,7 @@ function format_mm_units_combined(int $n): string {
 function api_settings(): array {
     $pdo = db();
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+        require_auth();
         require_post();
         $in = json_in();
         $allowed = ['default_amount','currency','language','theme','display_mode','group_name'];
@@ -372,8 +424,62 @@ function api_settings(): array {
     }
     $rows = $pdo->query("SELECT key,value FROM settings")->fetchAll();
     $out = [];
-    foreach ($rows as $r) $out[$r['key']] = $r['value'];
+    foreach ($rows as $r) {
+        // Never expose the password hash to the browser
+        if ($r['key'] === 'admin_password_hash') continue;
+        $out[$r['key']] = $r['value'];
+    }
     return ok($out);
+}
+
+// ----------------------- API: auth (login/logout/status/change) ---------
+function api_login(): array {
+    require_post();
+    start_session_once();
+    $ip = client_ip();
+    if (too_many_attempts($ip)) {
+        http_response_code(429);
+        return ['success' => false, 'error' => 'Too many attempts. Please wait a few minutes.'];
+    }
+    $in = json_in();
+    $pw = (string)($in['password'] ?? '');
+    if ($pw === '') { record_attempt($ip, false); return fail('Password required'); }
+    $hash = get_setting('admin_password_hash', '');
+    if (!$hash || !password_verify($pw, $hash)) {
+        record_attempt($ip, false);
+        return fail('Invalid password');
+    }
+    record_attempt($ip, true);
+    // Regenerate session ID to prevent fixation
+    session_regenerate_id(true);
+    $_SESSION['auth_ok'] = true;
+    $_SESSION['auth_at'] = time();
+    return ok(['auth' => true]);
+}
+function api_logout(): array {
+    start_session_once();
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $p = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+    }
+    session_destroy();
+    return ok(['auth' => false]);
+}
+function api_auth_status(): array {
+    return ok(['auth' => is_authed()]);
+}
+function api_change_password(): array {
+    require_auth();
+    require_post();
+    $in = json_in();
+    $cur = (string)($in['current'] ?? '');
+    $new = (string)($in['new'] ?? '');
+    if (strlen($new) < 6) return fail('New password must be at least 6 characters');
+    $hash = get_setting('admin_password_hash', '');
+    if (!$hash || !password_verify($cur, $hash)) return fail('Current password is incorrect');
+    set_setting('admin_password_hash', password_hash($new, PASSWORD_BCRYPT));
+    return ok(['changed' => true]);
 }
 
 // ----------------------- API: members -----------------------------------
@@ -383,6 +489,7 @@ function api_members(): array {
     $action = sval('action', 'list');
 
     if ($method === 'POST' && $action === 'save') {
+        require_auth();
         require_post();
         $in = json_in();
         $id   = isset($in['id']) ? (int)$in['id'] : 0;
@@ -405,6 +512,7 @@ function api_members(): array {
         }
     }
     if ($method === 'POST' && $action === 'delete') {
+        require_auth();
         require_post();
         $id = sint('id', 0);
         if ($id <= 0) return fail('Invalid id');
@@ -412,6 +520,7 @@ function api_members(): array {
         return ok(['id'=>$id]);
     }
     if ($method === 'POST' && $action === 'toggle') {
+        require_auth();
         require_post();
         $id = sint('id', 0);
         $pdo->prepare("UPDATE members SET active = 1 - active, updated_at=? WHERE id=?")
@@ -516,6 +625,7 @@ function api_payments(): array {
 }
 
 function api_save_payment(): array {
+    require_auth();
     require_post();
     $pdo = db();
     $in = json_in();
@@ -577,6 +687,7 @@ function api_save_payment(): array {
 }
 
 function api_delete_payment(): array {
+    require_auth();
     require_post();
     $pdo = db();
     $in = json_in();
@@ -587,6 +698,7 @@ function api_delete_payment(): array {
 }
 
 function api_bulk_pay(): array {
+    require_auth();
     require_post();
     $pdo = db();
     $in = json_in();
@@ -801,6 +913,7 @@ function api_search(): array {
 
 // ----------------------- API: backup/restore ---------------------------
 function api_export(): array {
+    require_auth();
     $pdo = db();
     $fmt = sval('format', 'json');
     if ($fmt === 'csv') {
@@ -836,6 +949,7 @@ function api_export(): array {
 }
 
 function api_import(): array {
+    require_auth();
     require_post();
     if (empty($_FILES['file']['tmp_name'])) {
         $in = json_in();
@@ -920,7 +1034,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#0b1220">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23123b8a'/><text x='50%25' y='58%25' font-size='38' text-anchor='middle' fill='%23ffd166' font-family='Arial'>က</text></svg>">
-<link rel="stylesheet" href="?asset=css">
+<link rel="stylesheet" href="?asset=css&amp;v=2">
 </head>
 <body>
 <div id="app" class="app">
@@ -959,7 +1073,8 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
         </div>
         <select id="month-picker" class="select" aria-label="Month"></select>
         <select id="year-picker" class="select" aria-label="Year"></select>
-        <button class="primary-btn" id="quick-pay" type="button" data-i18n="action.quick_pay">+ Quick Pay</button>
+        <button class="primary-btn admin-only" id="quick-pay" type="button" data-i18n="action.quick_pay">+ Quick Pay</button>
+        <button class="primary-btn" id="auth-btn" type="button" data-i18n="login.submit">Sign in</button>
       </div>
     </header>
 
@@ -978,6 +1093,28 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
 <!-- Modal & Toast containers -->
 <div id="modal-root"></div>
 <div id="toast-root" class="toast-root"></div>
+
+<!-- Login overlay (shown when not authed; has Continue as Guest option) -->
+<div id="login-screen" class="login-screen" hidden>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-mark" style="width:56px;height:56px;font-size:26px">က</div>
+      <div>
+        <div class="login-title"><?php echo h($groupName); ?></div>
+        <div class="login-sub" data-i18n="login.subtitle">Admin sign-in</div>
+      </div>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <label class="field"><span data-i18n="login.password">Admin password</span>
+        <input type="password" name="password" autofocus>
+      </label>
+      <div class="login-error" id="login-error" hidden></div>
+      <button class="primary-btn" type="submit" data-i18n="login.submit">Sign in</button>
+    </form>
+    <button class="ghost-btn login-guest" id="guest-btn" type="button" data-i18n="login.guest">Continue as Guest</button>
+    <div class="login-hint muted" data-i18n="login.hint">Default: admin123 — change it in Settings.</div>
+  </div>
+</div>
 
 <!-- Templates -->
 <template id="tpl-payment-modal">
@@ -1081,6 +1218,6 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
   defaultTheme: <?php echo json_encode($defaultTheme); ?>,
   defaultMode: <?php echo json_encode($defaultMode); ?>,
 };</script>
-<script src="?asset=js"></script>
+<script src="?asset=js&amp;v=2"></script>
 </body>
 </html>
