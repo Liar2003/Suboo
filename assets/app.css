@@ -176,7 +176,7 @@ a { color: inherit; text-decoration: none; }
 [data-theme="dark"] .kpi .kpi-progress-label { color: #fed7aa; }
 
 /* ============================== Panels ============================== */
-.section { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+.section { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; min-width: 0; }
 .section h3 { margin: 0 0 12px; font-size: 15px; letter-spacing: .02em; }
 .row-grid { display: grid; gap: 16px; grid-template-columns: 2fr 1fr; }
 @media (max-width: 1100px) { .row-grid { grid-template-columns: 1fr; } }
@@ -196,12 +196,14 @@ a { color: inherit; text-decoration: none; }
 .list .list-item .amt, .exp-months .list-item .amt { margin-left: auto; font-weight: 700; }
 
 /* ============================== Tables ============================== */
-.table-wrap { overflow-x: auto; overflow-y: hidden; border-radius: var(--radius); border: 1px solid var(--line); max-width: 100%; -webkit-overflow-scrolling: touch; }
-.table-wrap > table.t { min-width: 420px; width: max-content; max-width: 100%; }
+.table-wrap { display: block; overflow-x: auto; overflow-y: hidden; border-radius: var(--radius); border: 1px solid var(--line); max-width: 100%; -webkit-overflow-scrolling: touch; }
 .table-wrap::-webkit-scrollbar { height: 8px; }
 .table-wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
 .table-wrap::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-table.t { width: 100%; border-collapse: collapse; background: var(--bg-elev); font-size: 14px; }
+table.t { border-collapse: collapse; background: var(--bg-elev); font-size: 14px; width: 100%; }
+@media (max-width: 700px) {
+  table.t { min-width: 560px; }
+}
 table.t th, table.t td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
 table.t thead th { background: var(--bg-soft); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); position: sticky; top: 0; }
 table.t tr:hover td { background: color-mix(in oklab, var(--bg-soft) 70%, transparent); }
@@ -218,7 +220,7 @@ table.t td.center, table.t th.center { text-align: center; }
 [data-theme="dark"] .badge.info   { background: #0c2a4a; color: #93c5fd; }
 
 /* ============================== Charts ============================== */
-.chart-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.chart-card { background: var(--bg-elev); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; min-width: 0; }
 .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .chart-head h3 { margin: 0; font-size: 14px; }
 .chart-tabs { display: inline-flex; gap: 4px; background: var(--bg-soft); border-radius: 999px; padding: 2px; }

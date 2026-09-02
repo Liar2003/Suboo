@@ -17,13 +17,13 @@ $BACKUP_DIR = $ROOT . '/backups';
 $asset = isset($_GET['asset']) ? (string)$_GET['asset'] : '';
 if ($asset === 'css') {
     header('Content-Type: text/css; charset=utf-8');
-    header('Cache-Control: public, max-age=300');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     readfile(__DIR__ . '/assets/app.css');
     exit;
 }
 if ($asset === 'js') {
     header('Content-Type: application/javascript; charset=utf-8');
-    header('Cache-Control: public, max-age=300');
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     readfile(__DIR__ . '/assets/app.js');
     exit;
 }

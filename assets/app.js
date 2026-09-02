@@ -1531,7 +1531,7 @@ async function renderExpenses() {
   const monthTotals = months.map(m => byMonth[m].reduce((a, e) => a + (e.amount || 0), 0));
 
   c.innerHTML = `
-    <div class="row-grid">
+    <div class="row-grid-equal">
       <div class="section">
         <h3>${t('expenses.summary')}</h3>
         <div class="grid" style="gap:10px">
