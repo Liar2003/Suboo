@@ -1134,7 +1134,7 @@ async function renderDashboard() {
       </div>
     </section>
 
-    <section class="row-grid" style="margin-top:16px">
+    <section class="row-grid-equal" style="margin-top:16px">
       <div class="chart-card">
         <div class="chart-head"><h3>${t('dashboard.monthly_totals')}</h3></div>
         <div class="table-wrap"><table class="t" id="monthly-totals-table"></table></div>
@@ -1223,15 +1223,16 @@ async function renderDashboard() {
     <th class="center">${t('reports.col.rate')}</th>
   </tr></thead><tbody></tbody>`;
   const tbody = mt.querySelector('tbody');
+  const mL = t('reports.col.month'), cL = t('reports.col.collected'), eL = t('reports.col.expected'), rL = t('reports.col.remaining'), aL = t('reports.col.rate');
   for (const r of d.trend.slice().reverse()) {
     const exp = ms.expected; const rem = Math.max(0, exp - r.collected);
     const rate = exp ? Math.round(Math.min(r.collected, exp) * 10000 / exp) / 100 : 0;
     tbody.appendChild(el('tr', {},
-      el('td', {}, monthName(r.month, state.lang)),
-      el('td', { class: 'num', html: amountHTML(r.collected) }),
-      el('td', { class: 'num', html: amountHTML(exp) }),
-      el('td', { class: 'num', html: amountHTML(rem) }),
-      el('td', { class: 'center' }, rate + '%'),
+      el('td', { 'data-label': mL }, monthName(r.month, state.lang)),
+      el('td', { class: 'num', 'data-label': cL, html: amountHTML(r.collected) }),
+      el('td', { class: 'num', 'data-label': eL, html: amountHTML(exp) }),
+      el('td', { class: 'num', 'data-label': rL, html: amountHTML(rem) }),
+      el('td', { class: 'center', 'data-label': aL }, rate + '%'),
     ));
   }
 
@@ -1245,13 +1246,14 @@ async function renderDashboard() {
     <th class="center">${t('monthly.table.action')}</th>
   </tr></thead><tbody></tbody>`;
   const mstb = mst.querySelector('tbody');
+  const mName = t('monthly.table.member'), mTarget = t('monthly.table.target'), mAmt = t('monthly.table.amount'), mStatus = t('monthly.table.status'), mAction = t('monthly.table.action');
   for (const m of d.member_status) {
     const tr = el('tr', {},
-      el('td', {}, m.name),
-      el('td', { class: 'num', html: amountHTML(m.expected) }),
-      el('td', { class: 'num', html: amountHTML(m.amount) }),
-      el('td', { class: 'center', html: m.paid ? `<span class="badge paid">${t('status.paid')}</span>` : `<span class="badge unpaid">${t('status.unpaid')}</span>` }),
-      el('td', { class: 'center' },
+      el('td', { 'data-label': mName }, m.name),
+      el('td', { class: 'num', 'data-label': mTarget, html: amountHTML(m.expected) }),
+      el('td', { class: 'num', 'data-label': mAmt, html: amountHTML(m.amount) }),
+      el('td', { class: 'center', 'data-label': mStatus, html: m.paid ? `<span class="badge paid">${t('status.paid')}</span>` : `<span class="badge unpaid">${t('status.unpaid')}</span>` }),
+      el('td', { class: 'center', 'data-label': mAction },
         m.paid
           ? el('button', { class: 'ghost-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: d.month, unpaid: true }); } } }, t('action.mark_unpaid'))
           : el('button', { class: 'primary-btn admin-only', on: { click: async () => { if (await ensureAuth()) openPaymentModal({ member_id: m.id, month: d.month }); } } }, t('action.mark_paid'))

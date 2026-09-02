@@ -60,6 +60,8 @@ a { color: inherit; text-decoration: none; }
 .muted { color: var(--muted); }
 .row { display: flex; gap: 12px; align-items: center; }
 .spread { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.spread > .row { flex-wrap: wrap; min-width: 0; }
+.spread > .row > #m-search { min-width: 0; flex: 1 1 200px; }
 .grid { display: grid; gap: 16px; }
 .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
 @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
@@ -180,6 +182,8 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 1100px) { .row-grid { grid-template-columns: 1fr; } }
 .row-grid-3 { display: grid; gap: 16px; grid-template-columns: 1fr 1fr 1fr; }
 @media (max-width: 1100px) { .row-grid-3 { grid-template-columns: 1fr; } }
+.row-grid-equal { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 900px) { .row-grid-equal { grid-template-columns: 1fr; } }
 .row-grid-31 { display: grid; gap: 16px; grid-template-columns: 2fr 1fr; }
 @media (max-width: 1100px) { .row-grid-31 { grid-template-columns: 1fr; } }
 
@@ -192,7 +196,11 @@ a { color: inherit; text-decoration: none; }
 .list .list-item .amt, .exp-months .list-item .amt { margin-left: auto; font-weight: 700; }
 
 /* ============================== Tables ============================== */
-.table-wrap { overflow: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+.table-wrap { overflow-x: auto; overflow-y: hidden; border-radius: var(--radius); border: 1px solid var(--line); max-width: 100%; -webkit-overflow-scrolling: touch; }
+.table-wrap > table.t { min-width: 420px; width: max-content; max-width: 100%; }
+.table-wrap::-webkit-scrollbar { height: 8px; }
+.table-wrap::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 table.t { width: 100%; border-collapse: collapse; background: var(--bg-elev); font-size: 14px; }
 table.t th, table.t td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
 table.t thead th { background: var(--bg-soft); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); position: sticky; top: 0; }
