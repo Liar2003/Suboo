@@ -43,9 +43,31 @@ const T = {
     'admin.current_password': 'လက်ရှိ စကားဝှက်',
     'admin.new_password': 'စကားဝှက် အသစ်',
     'admin.password_changed': 'စကားဝှက် ပြောင်းပြီး',
+    'spend.title': 'စုစုပေါင်းမှ ကုန်ကျစရိတ် နုတ်ယူမည်',
+    'spend.amount': 'ပမာဏ',
+    'spend.date': 'ရက်စွဲ',
+    'spend.reason': 'အကြောင်းအရင်း / ဘာအတွက် သုံးသည်',
+    'spend.confirm': 'ကုန်ကျစရိတ် မှတ်တမ်းတင်မည်',
+    'spend.add': '+ Spend',
+    'spend.saved': 'ကုန်ကျစရိတ် မှတ်တမ်းတင်ပြီး',
+    'spend.deleted': 'ကုန်ကျစရိတ် ဖျက်ပြီး',
+    'spend.balance': 'လက်ကျန် ရငွေ',
+    'spend.list': 'ကုန်ကျစရိတ် မှတ်တမ်း',
+    'spend.empty': 'ကုန်ကျစရိတ် မှတ်တမ်း မရှိသေးပါ',
+    'spend.total': 'စုစုပေါင်း ကုန်ကျစရိတ်',
+    'spend.insufficient': 'လက်ကျန် မလုံလောက်ပါ',
+    'spend.kpi.total': 'စုစုပေါင်း ကုန်ကျစရိတ်',
+    'spend.kpi.this_month': 'ယခုလ ကုန်ကျစရိတ်',
+    'spend.kpi.this_year': 'ယခုနှစ် ကုန်ကျစရိတ်',
+    'spend.kpi.avg_per_month': 'ပျမ်းမျှ လစဉ်ကုန်ကျစရိတ်',
+    'spend.kpi.of_collected': 'စုဆောင်ငွေ၏',
+    'spend.kpi.remaining': 'လက်ကျန်',
+    'expenses.title': 'ကုန်ကျစရိတ်များ',
+    'expenses.summary': 'အကျဉ်းချုပ်',
     'nav.dashboard': 'ပင်မမျက်နှာပြင်',
     'nav.monthly':   'လစဉ်ပေးချေမှု',
     'nav.members':   'အဖွဲ့ဝင်များ',
+    'nav.expenses': 'ကုန်ကျစရိတ်များ',
     'nav.reports':   'အစီရင်ခံစာ',
     'nav.calendar':  'ပြက္ခဒိန်',
     'nav.backup':    'အရန်သိမ်းခြင်း',
@@ -95,6 +117,7 @@ const T = {
     'dashboard.donut': 'ပေးပြီး / မပေးရသေး',
     'dashboard.bar': 'မျှော်မှန်း / စုဆောင် / ကျန်',
     'dashboard.top': 'ထိပ်ဆုံး အလှူရှင်များ',
+    'dashboard.top_sub': 'ထိပ်ဆုံး ၃ ဦး',
     'dashboard.monthly_totals': 'လအလိုက် စုဆောင်ငွေ',
     'dashboard.expected_compared': 'မျှော်မှန်းနှင့် စုဆောင်နှိုင်းယှဉ်ချက်',
     'dashboard.this_year': 'ယခုနှစ် စုစုပေါင်း',
@@ -151,6 +174,14 @@ const T = {
     'reports.col.total': 'စုစုပေါင်း',
     'reports.col.avg': 'ပျမ်းမျှ',
     'reports.col.year': 'နှစ်',
+    'reports.chart.title': 'ခြုံငုံသုံးသပ်ချက်',
+    'reports.list.title': 'အသေးစိတ်',
+    'reports.kpi.collected': 'စုစုပေါင်း စုဆောင်',
+    'reports.kpi.expected': 'စုစုပေါင်း မျှော်မှန်း',
+    'reports.kpi.surplus': 'စုစုပေါင်း ပိုငွေ',
+    'reports.kpi.rate': 'ပျမ်းမျှ နှုန်း',
+    'reports.kpi.healthy': 'ကောင်းမွန်နေသည်',
+    'reports.kpi.watch': 'သတိပြုရန်',
 
     'calendar.title': 'ပြက္ခဒိန်',
     'calendar.empty': 'ဤလတွင် ပေးချေမှု မရှိသေးပါ',
@@ -229,9 +260,31 @@ const T = {
     'admin.current_password': 'Current password',
     'admin.new_password': 'New password',
     'admin.password_changed': 'Password changed',
+    'spend.title': 'Spend from total',
+    'spend.amount': 'Amount',
+    'spend.date': 'Date',
+    'spend.reason': 'Reason / what was it spent on',
+    'spend.confirm': 'Record Spend',
+    'spend.add': '+ Spend',
+    'spend.saved': 'Spend recorded',
+    'spend.deleted': 'Spend deleted',
+    'spend.balance': 'Available balance',
+    'spend.list': 'Spend history',
+    'spend.empty': 'No spend records yet',
+    'spend.total': 'Total spent',
+    'spend.insufficient': 'Insufficient balance',
+    'spend.kpi.total': 'Total Spent',
+    'spend.kpi.this_month': 'Spent This Month',
+    'spend.kpi.this_year': 'Spent This Year',
+    'spend.kpi.avg_per_month': 'Avg. Monthly Spend',
+    'spend.kpi.of_collected': 'of collected',
+    'spend.kpi.remaining': 'Remaining',
+    'expenses.title': 'Expenses',
+    'expenses.summary': 'Summary',
     'nav.dashboard': 'Dashboard',
     'nav.monthly':   'Monthly',
     'nav.members':   'Members',
+    'nav.expenses': 'Expenses',
     'nav.reports':   'Reports',
     'nav.calendar':  'Calendar',
     'nav.backup':    'Backup',
@@ -281,6 +334,7 @@ const T = {
     'dashboard.donut': 'Paid vs Unpaid',
     'dashboard.bar': 'Expected vs Collected',
     'dashboard.top': 'Top Contributors',
+    'dashboard.top_sub': 'Top 3',
     'dashboard.monthly_totals': 'Monthly Savings Overview',
     'dashboard.expected_compared': 'Expected vs Collected (current month)',
     'dashboard.this_year': 'This Year',
@@ -337,6 +391,14 @@ const T = {
     'reports.col.total': 'Total',
     'reports.col.avg': 'Average',
     'reports.col.year': 'Year',
+    'reports.chart.title': 'Overview',
+    'reports.list.title': 'Breakdown',
+    'reports.kpi.collected': 'Total Collected',
+    'reports.kpi.expected': 'Total Expected',
+    'reports.kpi.surplus': 'Total Surplus',
+    'reports.kpi.rate': 'Average Rate',
+    'reports.kpi.healthy': 'On track',
+    'reports.kpi.watch': 'Needs attention',
 
     'calendar.title': 'Calendar',
     'calendar.empty': 'No payment activity this month',
@@ -573,7 +635,21 @@ async function api(action, params = {}, method = 'GET', body = null) {
     opt.headers['Content-Type'] = 'application/json';
     opt.body = JSON.stringify(body);
   }
-  const r = await fetch(url, opt);
+  let r;
+  try {
+    r = await fetch(url, opt);
+  } catch (e) {
+    // Network error or aborted request — give a clearer message
+    throw new Error('Network error');
+  }
+  const ct = (r.headers.get('content-type') || '').toLowerCase();
+  if (!ct.includes('application/json')) {
+    // Server returned HTML or empty (route mismatch / crash). Try to give a useful hint.
+    let body = '';
+    try { body = (await r.text()).slice(0, 200); } catch (_) {}
+    console.error('[api] Non-JSON response for', action, 'status=', r.status, 'body=', body);
+    throw new Error('Bad response from server');
+  }
   const j = await r.json().catch(() => ({ success: false, error: 'Bad response' }));
   if (r.status === 401 || (j && j.error === 'auth_required')) {
     state.auth = false;
@@ -698,6 +774,11 @@ function showLogin() {
   const ls = $('#login-screen');
   if (ls) ls.hidden = false;
   document.body.classList.add('locked');
+  // Clear any stale error so the user doesn't see a leftover message
+  const errEl = $('#login-error');
+  if (errEl) { errEl.textContent = ''; errEl.hidden = true; }
+  const pw = ls && ls.querySelector('input[name=password]');
+  if (pw) pw.value = '';
   // Focus the password field next tick
   setTimeout(() => { const f = ls && ls.querySelector('input[name=password]'); if (f) f.focus(); }, 30);
 }
@@ -727,6 +808,9 @@ function setAuthUi() {
   }
 }
 async function doLogin(password) {
+  // Clear any stale error before attempting
+  const errEl = $('#login-error');
+  if (errEl) { errEl.textContent = ''; errEl.hidden = true; }
   try {
     await api('login', {}, 'POST', { password });
     state.auth = true;
@@ -736,8 +820,9 @@ async function doLogin(password) {
     route();
     return true;
   } catch (e) {
-    const err = $('#login-error');
-    if (err) { err.textContent = t('login.invalid'); err.hidden = false; }
+    const msg = (e && e.message && e.message !== 'auth_required' && e.message !== 'Bad response' && e.message !== 'Request failed')
+      ? e.message : t('login.invalid');
+    if (errEl) { errEl.textContent = msg; errEl.hidden = false; }
     return false;
   }
 }
@@ -885,6 +970,7 @@ async function route() {
     else if (name === 'monthly')   await renderMonthly();
     else if (name === 'members')   await renderMembers();
     else if (name === 'member')    await renderMember(param);
+    else if (name === 'expenses')  await renderExpenses();
     else if (name === 'reports')   await renderReports();
     else if (name === 'calendar')  await renderCalendar();
     else if (name === 'backup')    await renderBackup();
@@ -895,16 +981,40 @@ async function route() {
     setAuthUi();
   } catch (e) {
     console.error(e);
-    c.innerHTML = '<div class="empty">' + escapeHTML(e.message) + '</div>';
+    const msg = (e && e.message) || 'Unknown error';
+    c.innerHTML = `<div class="empty">
+      <div>${escapeHTML(msg)}</div>
+      <button class="ghost-btn" style="margin-top:10px" id="route-retry">Retry</button>
+    </div>`;
+    const retry = $('#route-retry');
+    if (retry) retry.addEventListener('click', () => route());
   }
 }
 
 // ----------------------- Dashboard ------------------------------------
+function avgPerMonth(d) {
+  // Average monthly spending across the months that have any spend record.
+  // Falls back to 0 when we have no spend history.
+  if (!d || !d.trend || !d.recent_expenses || !d.recent_expenses.length) return 0;
+  const months = new Set();
+  for (const e of d.recent_expenses) {
+    if (e.spent_at) months.add(e.spent_at.slice(0, 7));
+  }
+  if (!months.size) return 0;
+  return Math.round((d.all_time_spent || 0) / months.size);
+}
+
 async function renderDashboard() {
   setTitle(t('dashboard.title'));
   const c = $('#content');
   const d = await api('dashboard', { month: state.month, year: state.year });
   const cm = d.current, tot = d.all_time, yr = d.year_total, ms = d.members;
+  const spent = d.all_time_spent || 0;
+  const avail = d.available || 0;
+  const spentMonth = cm.spent || 0;
+  const spentYear = d.year_spent || 0;
+  // Spend ratio (spent vs all-time collected) — helps at a glance
+  const spendRatio = tot > 0 ? Math.min(100, Math.round(spent * 10000 / tot) / 100) : 0;
 
   c.innerHTML = `
     <section class="kpis">
@@ -928,9 +1038,60 @@ async function renderDashboard() {
       </div>
       <div class="kpi kpi-grad-3">
         <div class="kpi-ico">◈</div>
-        <div class="kpi-label">${t('dashboard.kpi.all_time')}</div>
-        <div class="kpi-value">${formatAmount(tot).en}</div>
-        <div class="kpi-sub amount-text">${formatAmount(tot).mm}</div>
+        <div class="kpi-label">${t('spend.balance')} / ${t('dashboard.kpi.all_time')}</div>
+        <div class="kpi-value">${formatAmount(avail).en}</div>
+        <div class="kpi-sub amount-text">${formatAmount(avail).mm}</div>
+      </div>
+    </section>
+
+    <section class="kpis spend-cards" style="margin-top:14px">
+      <div class="kpi kpi-grad-spend">
+        <div class="kpi-head">
+          <div class="kpi-ico">↘</div>
+          <div class="kpi-label">${t('spend.kpi.total')}</div>
+        </div>
+        <div class="kpi-value">${formatAmount(spent).en}</div>
+        <div class="kpi-sub amount-text">${formatAmount(spent).mm}</div>
+        <div class="kpi-progress" title="${spendRatio}% ${t('spend.kpi.of_collected')}">
+          <div class="kpi-progress-fill" style="width:${spendRatio}%"></div>
+          <span class="kpi-progress-label">${spendRatio}% ${t('spend.kpi.of_collected')}</span>
+        </div>
+      </div>
+      <div class="kpi kpi-grad-spend">
+        <div class="kpi-head">
+          <div class="kpi-ico">▦</div>
+          <div class="kpi-label">${t('spend.kpi.this_month')} • ${shortMonthName(d.month, state.lang)}</div>
+        </div>
+        <div class="kpi-value">${formatAmount(spentMonth).en}</div>
+        <div class="kpi-sub amount-text">${formatAmount(spentMonth).mm}</div>
+        <div class="kpi-progress">
+          <div class="kpi-progress-fill kpi-progress-fill-warn" style="width:${cm.collected > 0 ? Math.min(100, Math.round(spentMonth * 10000 / cm.collected) / 100) : 0}%"></div>
+          <span class="kpi-progress-label">${cm.collected > 0 ? Math.min(100, Math.round(spentMonth * 10000 / cm.collected) / 100) : 0}% ${t('spend.kpi.of_collected')}</span>
+        </div>
+      </div>
+      <div class="kpi kpi-grad-spend">
+        <div class="kpi-head">
+          <div class="kpi-ico">▤</div>
+          <div class="kpi-label">${t('spend.kpi.this_year')} ${d.year}</div>
+        </div>
+        <div class="kpi-value">${formatAmount(spentYear).en}</div>
+        <div class="kpi-sub amount-text">${formatAmount(spentYear).mm}</div>
+        <div class="kpi-progress">
+          <div class="kpi-progress-fill kpi-progress-fill-accent" style="width:${yr > 0 ? Math.min(100, Math.round(spentYear * 10000 / yr) / 100) : 0}%"></div>
+          <span class="kpi-progress-label">${yr > 0 ? Math.min(100, Math.round(spentYear * 10000 / yr) / 100) : 0}% ${t('spend.kpi.of_collected')}</span>
+        </div>
+      </div>
+      <div class="kpi kpi-grad-spend">
+        <div class="kpi-head">
+          <div class="kpi-ico">✦</div>
+          <div class="kpi-label">${t('spend.kpi.avg_per_month')}</div>
+        </div>
+        <div class="kpi-value">${formatAmount(avgPerMonth(d)).en}</div>
+        <div class="kpi-sub amount-text">${formatAmount(avgPerMonth(d)).mm}</div>
+        <div class="kpi-progress">
+          <div class="kpi-progress-fill kpi-progress-fill-good" style="width:${d.available && tot > 0 ? Math.min(100, Math.round(d.available * 10000 / tot) / 100) : 0}%"></div>
+          <span class="kpi-progress-label">${t('spend.kpi.remaining')}: ${formatAmount(avail).en}</span>
+        </div>
       </div>
     </section>
 
@@ -939,6 +1100,7 @@ async function renderDashboard() {
         <div class="chart-head">
           <h3>${t('dashboard.trend')}</h3>
           <div class="chart-tabs" id="trend-tabs">
+            <button data-range="1">1M</button>
             <button data-range="3">3M</button>
             <button data-range="6">6M</button>
             <button data-range="12">12M</button>
@@ -948,15 +1110,13 @@ async function renderDashboard() {
         <svg class="chart" id="trend-chart" viewBox="0 0 600 280" preserveAspectRatio="none"></svg>
       </div>
       <div class="chart-card">
-        <div class="chart-head"><h3>${t('dashboard.donut')}</h3></div>
-        <div class="donut-wrap">
-          <svg class="chart" id="donut" viewBox="0 0 200 200" style="height:200px;width:200px"></svg>
-          <div class="donut-legend">
-            <div class="leg"><span class="dot" style="background:var(--good)"></span>${t('dashboard.paid')}: <strong>${cm.paid}</strong></div>
-            <div class="leg"><span class="dot" style="background:var(--bad)"></span>${t('dashboard.unpaid')}: <strong>${cm.unpaid}</strong></div>
-            <div class="leg muted">${t('dashboard.rate')}: <strong>${cm.rate}%</strong></div>
-          </div>
+        <div class="chart-head"><h3>${t('spend.list')}</h3>
+          <button class="primary-btn admin-only" id="spend-btn" type="button">${t('spend.add')}</button>
         </div>
+        <div class="list" id="spend-list">
+          ${(d.recent_expenses && d.recent_expenses.length) ? '' : `<div class="empty" style="margin:0">${t('spend.empty')}</div>`}
+        </div>
+        ${(d.recent_expenses && d.recent_expenses.length) ? `<div class="muted" style="margin-top:8px;text-align:right">${t('spend.total')}: ${amountHTML(spent)}</div>` : ''}
       </div>
     </section>
 
@@ -966,7 +1126,10 @@ async function renderDashboard() {
         <svg class="chart" id="bar" viewBox="0 0 600 220" preserveAspectRatio="none"></svg>
       </div>
       <div class="chart-card">
-        <div class="chart-head"><h3>${t('dashboard.top')}</h3></div>
+        <div class="chart-head">
+          <h3>${t('dashboard.top')}</h3>
+          <span class="muted" style="font-size:12px">${t('dashboard.top_sub')}</span>
+        </div>
         <div class="list" id="top-list"></div>
       </div>
     </section>
@@ -1000,8 +1163,31 @@ async function renderDashboard() {
     drawTrend();
   }));
 
-  // Donut
-  drawDonut($('#donut'), cm.paid, cm.unpaid);
+  // Donut (the previous donut was in the trend row; we replaced with spend list)
+  // (The donut is no longer in this layout — keeps trend chart wider)
+
+  // Spend list (recent)
+  const sl = $('#spend-list');
+  if (d.recent_expenses && d.recent_expenses.length) {
+    for (const e of d.recent_expenses) {
+      const a = formatAmount(e.amount);
+      const dt = (e.spent_at || '').slice(0, 10);
+      sl.appendChild(el('div', { class: 'list-item' },
+        el('div', { class: 'rank', html: '↘' }),
+        el('div', {},
+          el('div', { class: 'name' }, e.reason || '—'),
+          el('div', { class: 'meta' }, dt)
+        ),
+        el('div', { class: 'amt' },
+          el('div', { class: 'amt-exact' }, state.lang === 'mm' ? a.mm : a.en),
+          el('div', { class: 'amt-units amount-text' }, a.mm),
+        )
+      ));
+    }
+  }
+  // Spend button
+  const sb = $('#spend-btn');
+  if (sb) sb.addEventListener('click', async () => { if (await ensureAuth()) openSpendModal(avail); });
 
   // Expected vs Collected bar
   drawGroupedBar($('#bar'), [
@@ -1010,9 +1196,9 @@ async function renderDashboard() {
     { label: t('dashboard.remaining'), value: cm.remaining, color: 'var(--bad)' },
   ], { yLabel: 'MMK' });
 
-  // Top contributors
+  // Top contributors (top 3 only — keep the dashboard compact)
   const top = $('#top-list'); top.innerHTML = '';
-  d.top.forEach((m, i) => {
+  d.top.slice(0, 3).forEach((m, i) => {
     const a = formatAmount(m.total);
     top.appendChild(el('div', { class: 'list-item' },
       el('div', { class: 'rank' }, String(i+1)),
@@ -1324,6 +1510,104 @@ async function deletePayment(id) {
   });
 }
 
+// ----------------------- Expenses (spend history) -----------------------
+async function renderExpenses() {
+  setTitle(t('expenses.title'));
+  const c = $('#content');
+  const data = await api('expenses');
+  const items = data.items || [];
+  const total = items.reduce((a, e) => a + (e.amount || 0), 0);
+  // Group by month
+  const byMonth = {};
+  for (const e of items) {
+    const m = (e.spent_at || '').slice(0, 7);
+    (byMonth[m] = byMonth[m] || []).push(e);
+  }
+  const months = Object.keys(byMonth).sort().reverse();
+
+  const monthCounts = months.map(m => byMonth[m].length);
+  const monthTotals = months.map(m => byMonth[m].reduce((a, e) => a + (e.amount || 0), 0));
+
+  c.innerHTML = `
+    <div class="row-grid">
+      <div class="section">
+        <h3>${t('expenses.summary')}</h3>
+        <div class="grid" style="gap:10px">
+          <div><div class="muted">${t('spend.total')}</div>
+            <div style="font-size:24px;font-weight:800">${formatAmount(total).en}</div>
+            <div class="amount-text muted">${formatAmount(total).mm}</div></div>
+          <div class="row">
+            <button class="primary-btn admin-only" id="add-spend">${t('spend.add')}</button>
+          </div>
+          ${months.length > 1 ? `<div class="exp-months" id="exp-months"></div>` : ''}
+        </div>
+      </div>
+      <div class="section">
+        <h3>${t('spend.list')}</h3>
+        ${items.length ? `<div class="table-wrap"><table class="t" id="exp-table">
+          <thead><tr>
+            <th>${t('spend.date')}</th>
+            <th>${t('spend.reason')}</th>
+            <th>${t('field.note')}</th>
+            <th class="num">${t('spend.amount')}</th>
+            <th class="center">${t('monthly.table.action')}</th>
+          </tr></thead><tbody></tbody>
+        </table></div>` : `<div class="empty">${t('spend.empty')}</div>`}
+      </div>
+    </div>
+  `;
+  $('#add-spend').addEventListener('click', async () => {
+    const dash = await api('dashboard', { month: state.month, year: state.year });
+    openSpendModal(dash.available || 0);
+  });
+  if (items.length) {
+    const tb = $('#exp-table tbody');
+    for (const e of items) {
+      const a = formatAmount(e.amount);
+      tb.appendChild(el('tr', {},
+        el('td', {}, (e.spent_at || '').slice(0, 10)),
+        el('td', {}, e.reason || '—'),
+        el('td', { class: 'muted' }, e.note || ''),
+        el('td', { class: 'num' },
+          el('div', { class: 'amt-exact' }, state.lang === 'mm' ? a.mm : a.en),
+          el('div', { class: 'amt-units amount-text' }, a.mm),
+        ),
+        el('td', { class: 'center' },
+          el('button', { class: 'danger-btn admin-only', on: { click: () => deleteExpense(e.id) } }, t('action.delete'))
+        )
+      ));
+    }
+  }
+  if (months.length > 1) {
+    const ml = $('#exp-months');
+    if (ml) {
+      months.forEach((m, i) => {
+        const a = formatAmount(monthTotals[i]);
+        ml.appendChild(el('div', { class: 'list-item' },
+          el('div', { class: 'rank' }, '▤'),
+          el('div', {},
+            el('div', { class: 'name' }, monthName(m, state.lang)),
+            el('div', { class: 'meta' }, monthCounts[i] + ' ' + (state.lang === 'mm' ? 'ခု' : 'items'))
+          ),
+          el('div', { class: 'amt' },
+            el('div', { class: 'amt-exact' }, state.lang === 'mm' ? a.mm : a.en),
+            el('div', { class: 'amt-units amount-text' }, a.mm)
+          )
+        ));
+      });
+    }
+  }
+}
+
+async function deleteExpense(id) {
+  if (!await ensureAuth()) return;
+  confirmModal(t('action.delete') + '?', async () => {
+    await api('expenses', { action: 'delete' }, 'POST', { id });
+    toast(t('spend.deleted'), 'good');
+    route();
+  });
+}
+
 // ----------------------- Reports ---------------------------------------
 async function renderReports() {
   setTitle(t('reports.title'));
@@ -1338,7 +1622,17 @@ async function renderReports() {
         <button data-tab="member">${t('reports.tab.member')}</button>
       </div>
     </div>
-    <div id="rep-body" class="section"></div>
+    <div id="rep-kpis" class="kpis"></div>
+    <div class="row-grid" style="margin-top:16px">
+      <div class="chart-card">
+        <div class="chart-head"><h3>${t('reports.chart.title')}</h3></div>
+        <svg class="chart" id="rep-chart" viewBox="0 0 600 240" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h3>${t('reports.list.title')}</h3></div>
+        <div class="list" id="rep-list"></div>
+      </div>
+    </div>
   `;
   $$('#rep-tabs button').forEach(b => b.addEventListener('click', () => {
     $$('#rep-tabs button').forEach(x => x.classList.remove('active'));
@@ -1346,69 +1640,142 @@ async function renderReports() {
     tab = b.getAttribute('data-tab');
     draw();
   }));
-  async function draw() {
-    const body = $('#rep-body'); body.innerHTML = '<div class="empty">' + t('common.loading') + '</div>';
-    const data = await api('reports', { type: tab });
-    if (tab === 'all_month') {
-      body.innerHTML = `<div class="table-wrap"><table class="t">
-        <thead><tr>
-          <th>${t('reports.col.month')}</th>
-          <th class="num">${t('reports.col.expected')}</th>
-          <th class="num">${t('reports.col.collected')}</th>
-          <th class="num">${t('reports.col.remaining')}</th>
-          <th class="num">${t('reports.col.surplus')}</th>
-          <th class="center">${t('reports.col.paid')}</th>
-          <th class="center">${t('reports.col.unpaid')}</th>
-          <th class="center">${t('reports.col.rate')}</th>
-        </tr></thead><tbody></tbody></table></div>`;
-      const tb = body.querySelector('tbody');
-      for (const r of data.rows) {
-        tb.appendChild(el('tr', {},
-          el('td', {}, monthName(r.month, state.lang)),
-          el('td', { class: 'num', html: amountHTML(r.expected) }),
-          el('td', { class: 'num', html: amountHTML(r.collected) }),
-          el('td', { class: 'num', html: amountHTML(r.remaining) }),
-          el('td', { class: 'num', html: amountHTML(r.surplus) }),
-          el('td', { class: 'center' }, String(r.paid)),
-          el('td', { class: 'center' }, String(r.unpaid)),
-          el('td', { class: 'center' }, r.rate + '%'),
-        ));
+
+  function makeSparkline(values, color) {
+    const W = 120, H = 36;
+    const max = Math.max(1, ...values);
+    const min = Math.min(0, ...values);
+    const range = Math.max(1, max - min);
+    const step = values.length > 1 ? W / (values.length - 1) : W;
+    let d = '';
+    values.forEach((v, i) => {
+      const x = i * step;
+      const y = H - 4 - ((v - min) / range) * (H - 8);
+      d += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('width', W); svg.setAttribute('height', H);
+    svg.classList.add('spark');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d.trim());
+    path.setAttribute('fill', 'none'); path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2'); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function renderKpis(rows) {
+    const kpis = $('#rep-kpis'); kpis.innerHTML = '';
+    if (!rows.length) { kpis.style.display = 'none'; return; }
+    kpis.style.display = '';
+    let totalCollected = 0, totalExpected = 0, totalSurplus = 0;
+    rows.forEach(r => { totalCollected += r.collected || 0; totalExpected += r.expected || 0; totalSurplus += r.surplus || 0; });
+    const overallRate = totalExpected > 0 ? Math.round(Math.min(totalCollected, totalExpected) * 10000 / totalExpected) / 100 : 0;
+    const cards = [
+      { label: t('reports.kpi.collected'), value: totalCollected, color: 'var(--good)' },
+      { label: t('reports.kpi.expected'), value: totalExpected, color: 'var(--primary-2)' },
+      { label: t('reports.kpi.surplus'), value: totalSurplus, color: 'var(--warn)' },
+      { label: t('reports.kpi.rate'), value: overallRate, isPercent: true, color: 'var(--accent)' },
+    ];
+    cards.forEach(c => {
+      const a = formatAmount(c.isPercent ? c.value : c.value);
+      const v = c.isPercent ? c.value + '%' : a.en;
+      const u = c.isPercent ? null : a.mm;
+      kpis.appendChild(el('div', { class: 'kpi' },
+        el('div', { class: 'kpi-ico' }, '◈'),
+        el('div', { class: 'kpi-label' }, c.label),
+        el('div', { class: 'kpi-value', style: 'color:' + c.color }, v),
+        u ? el('div', { class: 'kpi-sub amount-text' }, u) : el('div', { class: 'kpi-sub muted' }, overallRate >= 80 ? t('reports.kpi.healthy') : t('reports.kpi.watch'))
+      ));
+    });
+  }
+
+  function draw() {
+    const kpisEl = $('#rep-kpis');
+    const chartEl = $('#rep-chart');
+    const listEl = $('#rep-list');
+    listEl.innerHTML = '<div class="empty">' + t('common.loading') + '</div>';
+    (async () => {
+      const data = await api('reports', { type: tab });
+      renderKpis(data.rows || []);
+      if (tab === 'all_month') {
+        const rows = (data.rows || []).slice().reverse();
+        drawGroupedBar(chartEl, rows.map(r => ({
+          label: shortMonthName(r.month, state.lang),
+          value: r.collected,
+          color: r.collected >= r.expected ? 'var(--good)' : (r.collected > 0 ? 'var(--warn)' : 'var(--bad)')
+        })));
+        listEl.innerHTML = '';
+        rows.slice().reverse().forEach(r => {
+          const rate = r.expected > 0 ? Math.round(Math.min(r.collected, r.expected) * 10000 / r.expected) / 100 : 0;
+          listEl.appendChild(el('div', { class: 'list-item' },
+            el('div', { class: 'rank' }, shortMonthName(r.month, state.lang)),
+            el('div', {},
+              el('div', { class: 'name' }, monthName(r.month, state.lang)),
+              el('div', { class: 'meta' },
+                r.paid + ' ' + t('status.paid') + ' · ' +
+                r.unpaid + ' ' + t('status.unpaid') + ' · ' +
+                rate + '%')
+            ),
+            (() => { const sp = makeSparkline([r.expected, r.collected], 'var(--primary-2)'); sp.style.marginLeft = 'auto'; return sp; })(),
+            el('div', { class: 'amt' },
+              el('div', { class: 'amt-exact' }, state.lang === 'mm' ? formatAmount(r.collected).mm : formatAmount(r.collected).en),
+              el('div', { class: 'amt-units amount-text muted' },
+                r.surplus > 0 ? '+' + formatAmount(r.surplus).en : r.remaining > 0 ? '-' + formatAmount(r.remaining).en : formatAmount(0).en)
+            )
+          ));
+        });
+        if (!rows.length) listEl.innerHTML = `<div class="empty">${t('empty.nothing')}</div>`;
+      } else if (tab === 'yearly') {
+        const rows = data.rows || [];
+        drawGroupedBar(chartEl, rows.map(r => ({ label: r.year, value: r.collected, color: 'var(--primary-2)' })));
+        listEl.innerHTML = '';
+        rows.forEach(r => {
+          listEl.appendChild(el('div', { class: 'list-item' },
+            el('div', { class: 'rank' }, r.year),
+            el('div', {},
+              el('div', { class: 'name' }, r.year),
+              el('div', { class: 'meta' }, r.paid + ' ' + t('status.paid'))
+            ),
+            (() => { const sp = makeSparkline([r.collected], 'var(--primary-2)'); sp.style.marginLeft = 'auto'; return sp; })(),
+            el('div', { class: 'amt' },
+              el('div', { class: 'amt-exact' }, state.lang === 'mm' ? formatAmount(r.collected).mm : formatAmount(r.collected).en),
+              el('div', { class: 'amt-units amount-text muted' }, formatAmount(r.collected).mm)
+            )
+          ));
+        });
+        if (!rows.length) listEl.innerHTML = `<div class="empty">${t('empty.nothing')}</div>`;
+      } else {
+        const rows = (data.rows || []).slice().sort((a, b) => b.total - a.total);
+        const max = Math.max(1, ...rows.map(r => r.total));
+        drawGroupedBar(chartEl, rows.slice(0, 8).map(r => ({ label: r.name, value: r.total, color: 'var(--accent)' })));
+        listEl.innerHTML = '';
+        rows.forEach((r, i) => {
+          const pct = Math.round(r.total / max * 100);
+          listEl.appendChild(el('div', { class: 'list-item' },
+            el('div', { class: 'rank' }, String(i + 1)),
+            el('div', {},
+              el('div', { class: 'name' }, r.name),
+              el('div', { class: 'meta' }, r.paid_months + ' ' + t('member.paid_months') + ' · ' +
+                (r.avg ? formatAmount(r.avg).en + ' ' + t('reports.col.avg') : '-'))
+            ),
+            (() => {
+              const wrap = el('div', { class: 'rep-bar', style: 'margin-left:auto' });
+              const inner = el('div', { class: 'rep-bar-fill' });
+              inner.style.width = pct + '%';
+              wrap.appendChild(inner);
+              return wrap;
+            })(),
+            el('div', { class: 'amt' },
+              el('div', { class: 'amt-exact' }, state.lang === 'mm' ? formatAmount(r.total).mm : formatAmount(r.total).en),
+              el('div', { class: 'amt-units amount-text muted' }, formatAmount(r.total).mm)
+            )
+          ));
+        });
+        if (!rows.length) listEl.innerHTML = `<div class="empty">${t('empty.nothing')}</div>`;
       }
-      if (!data.rows.length) body.querySelector('tbody').innerHTML = `<tr><td colspan="8" class="center muted">${t('empty.nothing')}</td></tr>`;
-    } else if (tab === 'yearly') {
-      body.innerHTML = `<div class="table-wrap"><table class="t">
-        <thead><tr>
-          <th>${t('reports.col.year')}</th>
-          <th class="num">${t('reports.col.collected')}</th>
-          <th class="center">${t('reports.col.paid')}</th>
-        </tr></thead><tbody></tbody></table></div>`;
-      const tb = body.querySelector('tbody');
-      for (const r of data.rows) {
-        tb.appendChild(el('tr', {},
-          el('td', {}, r.year),
-          el('td', { class: 'num', html: amountHTML(r.collected) }),
-          el('td', { class: 'center' }, String(r.paid)),
-        ));
-      }
-      if (!data.rows.length) body.querySelector('tbody').innerHTML = `<tr><td colspan="3" class="center muted">${t('empty.nothing')}</td></tr>`;
-    } else {
-      body.innerHTML = `<div class="table-wrap"><table class="t">
-        <thead><tr>
-          <th>${t('reports.col.member')}</th>
-          <th class="num">${t('reports.col.total')}</th>
-          <th class="center">${t('member.paid_months')}</th>
-          <th class="num">${t('reports.col.avg')}</th>
-        </tr></thead><tbody></tbody></table></div>`;
-      const tb = body.querySelector('tbody');
-      for (const r of data.rows) {
-        tb.appendChild(el('tr', {},
-          el('td', {}, r.name),
-          el('td', { class: 'num', html: amountHTML(r.total) }),
-          el('td', { class: 'center' }, String(r.paid_months)),
-          el('td', { class: 'num', html: amountHTML(r.avg) }),
-        ));
-      }
-    }
+    })();
   }
   draw();
 }
@@ -1595,6 +1962,49 @@ async function renderBackup() {
 }
 
 // ----------------------- Modals ----------------------------------------
+function openSpendModal(available) {
+  const tpl = $('#tpl-spend-modal').content.cloneNode(true);
+  const m = openModal(tpl);
+  const form = m.root.querySelector('form');
+  const amt = form.querySelector('input[name=amount]');
+  const date = form.querySelector('input[name=spent_at]');
+  const reason = form.querySelector('input[name=reason]');
+  const note = form.querySelector('input[name=note]');
+  const hint = form.querySelector('[data-balance-hint]');
+  date.value = todayISO();
+  amt.value = '';
+  bindAmountPreview(amt, form.querySelector('[data-amount-preview]'));
+  const updateHint = () => {
+    const n = parseMyAmount(amt.value);
+    if (n == null) { hint.textContent = ''; hint.className = 'balance-hint'; return; }
+    const remaining = (available || 0) - n;
+    const a = formatAmount(available || 0);
+    const r = formatAmount(Math.max(0, remaining));
+    if (remaining < 0) {
+      hint.className = 'balance-hint err';
+      hint.textContent = t('spend.insufficient') + ' (' + r.en + ')';
+    } else {
+      hint.className = 'balance-hint ok';
+      hint.textContent = t('spend.balance') + ': ' + a.en + ' → ' + r.en;
+    }
+  };
+  amt.addEventListener('input', updateHint);
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const n = parseMyAmount(amt.value);
+    if (n == null || n <= 0) { toast(t('amount.invalid'), 'warn'); return; }
+    if ((available || 0) - n < 0) { toast(t('spend.insufficient'), 'warn'); return; }
+    try {
+      await api('expenses', { action: 'save' }, 'POST', {
+        amount: amt.value, spent_at: date.value, reason: reason.value.trim(), note: note.value,
+      });
+      toast(t('spend.saved'), 'good');
+      m.close();
+      route();
+    } catch (err) { toast(err.message, 'bad'); }
+  });
+}
+
 function openPaymentModal(prefill = {}) {
   const tpl = $('#tpl-payment-modal').content.cloneNode(true);
   const m = openModal(tpl);

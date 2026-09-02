@@ -135,6 +135,20 @@ function init_schema(PDO $pdo, bool $firstRun): void {
     ");
     $pdo->exec("CREATE INDEX IF NOT EXISTS idx_login_ip_time ON login_attempts(ip, attempted_at);");
 
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            amount INTEGER NOT NULL,
+            amount_input TEXT,
+            reason TEXT NOT NULL,
+            spent_at TEXT NOT NULL,
+            note TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        );
+    ");
+    $pdo->exec("CREATE INDEX IF NOT EXISTS idx_expenses_spent ON expenses(spent_at);");
+
     $defaults = [
         'default_amount'      => '10000',
         'currency'            => 'MMK',
@@ -205,7 +219,7 @@ function record_attempt(string $ip, bool $success): void {
 }
 
 // ----------------------------- Helpers -----------------------------------
-function now(): string { return gmdate('Y-m-d\TH:i:s'); }
+function now(): string { return gmdate('Y-m-d H:i:s'); }
 function today(): string { return gmdate('Y-m-d'); }
 function json_in(): array {
     $raw = file_get_contents('php://input') ?: '';
@@ -443,9 +457,15 @@ function api_login(): array {
     }
     $in = json_in();
     $pw = (string)($in['password'] ?? '');
-    if ($pw === '') { record_attempt($ip, false); return fail('Password required'); }
+    if ($pw === '') { record_attempt($ip, false); return fail('Invalid password'); }
     $hash = get_setting('admin_password_hash', '');
-    if (!$hash || !password_verify($pw, $hash)) {
+    if ($hash === '' || $hash === null) {
+        // Bootstrap default admin password on first run (schema v2 should have set this,
+        // but if a DB was created before the migration we still need a working login).
+        $hash = password_hash('admin123', PASSWORD_BCRYPT);
+        set_setting('admin_password_hash', $hash);
+    }
+    if (!password_verify($pw, $hash)) {
         record_attempt($ip, false);
         return fail('Invalid password');
     }
@@ -764,6 +784,23 @@ function api_dashboard(): array {
     $all = $pdo->query("SELECT COALESCE(SUM(amount),0) AS total, COUNT(*) AS cnt FROM payments WHERE paid=1")->fetch();
     $allTime = (int)$all['total'];
 
+    // expenses (spend) totals
+    $sAll = $pdo->query("SELECT COALESCE(SUM(amount),0) FROM expenses")->fetchColumn();
+    $totalSpent = (int)$sAll;
+    $available = $allTime - $totalSpent;
+    // spend in selected month
+    $smst = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE substr(spent_at,1,7)=?");
+    $smst->execute([$month]);
+    $spentThisMonth = (int)$smst->fetchColumn();
+    // spend in year
+    $syst = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE substr(spent_at,1,4)=?");
+    $syst->execute([$year]);
+    $spentThisYear = (int)$syst->fetchColumn();
+    // recent expenses
+    $recentExpenses = $pdo->query("SELECT * FROM expenses ORDER BY spent_at DESC, id DESC LIMIT 5")->fetchAll();
+    foreach ($recentExpenses as &$r) { $r['amount'] = (int)$r['amount']; }
+    unset($r);
+
     // this year
     $yst = $pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM payments WHERE paid=1 AND substr(month,1,4)=?");
     $yst->execute([$year]);
@@ -826,6 +863,7 @@ function api_dashboard(): array {
         'current' => [
             'expected' => $expected,
             'collected' => $collected,
+            'spent' => $spentThisMonth,
             'remaining' => $remaining,
             'surplus' => $surplus,
             'paid' => $paid,
@@ -833,10 +871,14 @@ function api_dashboard(): array {
             'rate' => $rate,
         ],
         'all_time' => $allTime,
+        'all_time_spent' => $totalSpent,
+        'available' => $available,
         'year_total' => $yearTotal,
+        'year_spent' => $spentThisYear,
         'trend' => $trend,
         'top' => $top,
         'member_status' => $memberStatus,
+        'recent_expenses' => $recentExpenses,
     ]);
 }
 
@@ -898,6 +940,47 @@ function api_reports(): array {
     return fail('Unknown report type');
 }
 
+// ----------------------- API: expenses (spend from total) ---------------
+function api_expenses(): array {
+    $pdo = db();
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+    $action = sval('action', 'list');
+    if ($method === 'POST' && $action === 'save') {
+        require_auth();
+        require_post();
+        $in = json_in();
+        $id       = (int)($in['id'] ?? 0);
+        $amountIn = (string)($in['amount'] ?? '');
+        $reason   = trim((string)($in['reason'] ?? ''));
+        $spentAt  = (string)($in['spent_at'] ?? today());
+        $note     = isset($in['note']) ? (string)$in['note'] : null;
+        $parsed   = parse_my_amount($amountIn);
+        if ($reason === '') return fail('Reason / purpose is required');
+        if ($parsed === null || $parsed <= 0) return fail('Valid amount required');
+        $t = now();
+        if ($id > 0) {
+            $pdo->prepare("UPDATE expenses SET amount=?, amount_input=?, reason=?, spent_at=?, note=?, updated_at=? WHERE id=?")
+                ->execute([$parsed, $amountIn, $reason, $spentAt, $note, $t, $id]);
+            return ok(['id'=>$id, 'updated'=>true]);
+        } else {
+            $pdo->prepare("INSERT INTO expenses(amount,amount_input,reason,spent_at,note,created_at,updated_at) VALUES(?,?,?,?,?,?,?)")
+                ->execute([$parsed, $amountIn, $reason, $spentAt, $note, $t, $t]);
+            return ok(['id'=>(int)$pdo->lastInsertId(), 'created'=>true]);
+        }
+    }
+    if ($method === 'POST' && $action === 'delete') {
+        require_auth();
+        require_post();
+        $id = sint('id', 0);
+        if ($id <= 0) return fail('id required');
+        $pdo->prepare("DELETE FROM expenses WHERE id=?")->execute([$id]);
+        return ok();
+    }
+    // LIST
+    $rows = $pdo->query("SELECT * FROM expenses ORDER BY spent_at DESC, id DESC")->fetchAll();
+    return ok(['items' => $rows]);
+}
+
 // ----------------------- API: search ------------------------------------
 function api_search(): array {
     $pdo = db();
@@ -941,6 +1024,7 @@ function api_export(): array {
         'settings' => $pdo->query("SELECT * FROM settings")->fetchAll(),
         'members'  => $pdo->query("SELECT * FROM members")->fetchAll(),
         'payments' => $pdo->query("SELECT * FROM payments")->fetchAll(),
+        'expenses' => $pdo->query("SELECT * FROM expenses")->fetchAll(),
     ];
     header('Content-Type: application/json; charset=utf-8');
     header('Content-Disposition: attachment; filename=savings-backup-' . gmdate('Y-m-d') . '.json');
@@ -964,7 +1048,7 @@ function api_import(): array {
     $pdo->beginTransaction();
     try {
         if ($mode === 'replace') {
-            $pdo->exec("DELETE FROM payments; DELETE FROM members; DELETE FROM settings;");
+            $pdo->exec("DELETE FROM payments; DELETE FROM members; DELETE FROM settings; DELETE FROM expenses;");
         }
         if (!empty($data['settings']) && is_array($data['settings'])) {
             $u = $pdo->prepare("INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value");
@@ -993,6 +1077,17 @@ function api_import(): array {
                     (int)$p['amount'], $p['amount_input'] ?? null,
                     (int)($p['paid'] ?? 1), $p['paid_at'] ?? null, $p['note'] ?? null,
                     $p['created_at'] ?? now(), $p['updated_at'] ?? now(),
+                ]);
+            }
+        }
+        if (!empty($data['expenses']) && is_array($data['expenses'])) {
+            $ins = $pdo->prepare("INSERT INTO expenses(id,amount,amount_input,reason,spent_at,note,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)
+                ON CONFLICT(id) DO UPDATE SET amount=excluded.amount, amount_input=excluded.amount_input, reason=excluded.reason, spent_at=excluded.spent_at, note=excluded.note, updated_at=excluded.updated_at");
+            foreach ($data['expenses'] as $e) {
+                $ins->execute([
+                    (int)$e['id'], (int)$e['amount'], $e['amount_input'] ?? null,
+                    (string)$e['reason'], (string)$e['spent_at'], $e['note'] ?? null,
+                    $e['created_at'] ?? now(), $e['updated_at'] ?? now(),
                 ]);
             }
         }
@@ -1034,7 +1129,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#0b1220">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23123b8a'/><text x='50%25' y='58%25' font-size='38' text-anchor='middle' fill='%23ffd166' font-family='Arial'>က</text></svg>">
-<link rel="stylesheet" href="?asset=css&amp;v=2">
+<link rel="stylesheet" href="?asset=css&amp;v=10">
 </head>
 <body>
 <div id="app" class="app">
@@ -1051,6 +1146,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
       <a href="#/dashboard"  class="nav-item" data-route="dashboard"><span class="nav-ico">▦</span><span data-i18n="nav.dashboard">Dashboard</span></a>
       <a href="#/monthly"    class="nav-item" data-route="monthly"><span class="nav-ico">▤</span><span data-i18n="nav.monthly">Monthly</span></a>
       <a href="#/members"    class="nav-item" data-route="members"><span class="nav-ico">◉</span><span data-i18n="nav.members">Members</span></a>
+      <a href="#/expenses"   class="nav-item" data-route="expenses"><span class="nav-ico">↘</span><span data-i18n="nav.expenses">Expenses</span></a>
       <a href="#/reports"    class="nav-item" data-route="reports"><span class="nav-ico">▣</span><span data-i18n="nav.reports">Reports</span></a>
       <a href="#/calendar"   class="nav-item" data-route="calendar"><span class="nav-ico">▦</span><span data-i18n="nav.calendar">Calendar</span></a>
       <a href="#/backup"     class="nav-item" data-route="backup"><span class="nav-ico">◈</span><span data-i18n="nav.backup">Backup</span></a>
@@ -1083,8 +1179,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
     <nav class="bottom-nav" id="bottom-nav">
       <a href="#/dashboard" data-route="dashboard">▦<span data-i18n="nav.dashboard">Dashboard</span></a>
       <a href="#/monthly"   data-route="monthly">▤<span data-i18n="nav.monthly">Monthly</span></a>
-      <a href="#/members"   data-route="members">◉<span data-i18n="nav.members">Members</span></a>
-      <a href="#/reports"   data-route="reports">▣<span data-i18n="nav.reports">Reports</span></a>
+      <a href="#/expenses"  data-route="expenses">↘<span data-i18n="nav.expenses">Expenses</span></a>
       <a href="#/settings"  data-route="settings">⚙<span data-i18n="nav.settings">Settings</span></a>
     </nav>
   </div>
@@ -1106,7 +1201,7 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
     </div>
     <form id="login-form" autocomplete="off">
       <label class="field"><span data-i18n="login.password">Admin password</span>
-        <input type="password" name="password" autofocus>
+        <input type="password" name="password" autofocus autocomplete="new-password">
       </label>
       <div class="login-error" id="login-error" hidden></div>
       <button class="primary-btn" type="submit" data-i18n="login.submit">Sign in</button>
@@ -1212,12 +1307,42 @@ $defaultMode  = get_setting('display_mode', 'both') ?: 'both';
   </div>
 </template>
 
+<template id="tpl-spend-modal">
+  <form class="modal-card">
+    <header class="modal-head">
+      <h3 data-i18n="spend.title">Spend from total</h3>
+      <button type="button" class="icon-btn modal-close" data-close>✕</button>
+    </header>
+    <div class="modal-body">
+      <div class="grid-2">
+        <label class="field"><span data-i18n="spend.amount">Amount</span>
+          <input name="amount" type="text" inputmode="text" autocomplete="off" placeholder="၁သိန်း / 100,000" required>
+          <div class="amount-preview" data-amount-preview></div>
+        </label>
+        <label class="field"><span data-i18n="spend.date">Date</span>
+          <input name="spent_at" type="date" required></label>
+      </div>
+      <label class="field"><span data-i18n="spend.reason">Reason / what was it spent on</span>
+        <input name="reason" type="text" required maxlength="200" placeholder="e.g. office supplies, party fund">
+      </label>
+      <label class="field"><span data-i18n="field.note">Note</span>
+        <input name="note" type="text" maxlength="200">
+      </label>
+      <div class="balance-hint" data-balance-hint></div>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost-btn" data-close data-i18n="action.cancel">Cancel</button>
+      <button type="submit" class="primary-btn" data-i18n="spend.confirm">Record Spend</button>
+    </footer>
+  </form>
+</template>
+
 <script>window.__APP__ = {
   groupName: <?php echo json_encode($groupName); ?>,
   defaultLang: <?php echo json_encode($defaultLang); ?>,
   defaultTheme: <?php echo json_encode($defaultTheme); ?>,
   defaultMode: <?php echo json_encode($defaultMode); ?>,
 };</script>
-<script src="?asset=js&amp;v=2"></script>
+<script src="?asset=js&amp;v=10"></script>
 </body>
 </html>
